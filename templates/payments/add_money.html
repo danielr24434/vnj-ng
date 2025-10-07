@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block title %}Add Money - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto" x-data="{ selectedMethod: '', manualFormErrors: {{ manual_form.errors|yesno:'true,false' }} }">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Add Money to Your Wallet</h1>
+
+        <div class="bg-gray-50 rounded-lg p-4 mb-6 text-center">
+            <p class="text-sm text-gray-600">Current Balance</p>
+            <p class="text-3xl font-bold text-gray-900">₦{{ current_balance|default:"0.00" }}</p>
+        </div>
+
+        <div>
+            <label for="payment_method" class="block text-sm font-medium text-gray-700">Choose a Deposit Method</label>
+            <select name="payment_method" id="payment_method" form="manualDepositForm"
+                    x-model="selectedMethod"
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                <option value="">-- Select a method --</option>
+                {% for method in payment_methods %}
+                    <option value="{{ method.id }}_{{ method.method_type }}">{{ method.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mt-6">
+            <div x-show="selectedMethod.endsWith('_auto')" x-transition>
+                <div class="bg-green-50 border-l-4 border-green-500 p-6 rounded-r-lg">
+                    <h3 class="text-lg font-semibold text-green-900 mb-4">Automatic Deposit</h3>
+                    {% if primary_virtual_account %}
+                        <p class="text-gray-700 mb-4">To fund your wallet automatically, transfer any amount to your personal virtual account below. Your wallet will be credited within 5-10 minutes.</p>
+                        <div class="space-y-3 bg-white p-4 rounded-lg border">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-medium text-gray-500">Bank Name</span>
+                                <span class="font-semibold text-gray-900">{{ primary_virtual_account.bank_name }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-medium text-gray-500">Account Number</span>
+                                <span class="font-bold text-xl text-green-600">{{ primary_virtual_account.account_number }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-medium text-gray-500">Account Name</span>
+                                <span class="font-semibold text-gray-900">{{ primary_virtual_account.account_name }}</span>
+                            </div>
+                        </div>
+                        <a href="{% url 'bank_preferences' %}" class="text-sm text-green-600 hover:underline mt-4 inline-block">Manage all virtual accounts &rarr;</a>
+                    {% else %}
+                        {% if user.kyc.status == 'pending' %}
+                            <p class="text-blue-800 text-center p-4 bg-blue-100 rounded-lg">Your KYC verification is under review. Virtual account will be activated once approved.</p>
+                        {% elif user.kyc.status == 'rejected' %}
+                            <p class="text-red-800 text-center p-4 bg-red-100 rounded-lg">Your KYC was rejected. Please resubmit to activate automatic funding.</p>
+                            <div class="text-center mt-4">
+                                <a href="{% url 'kyc_verification' %}" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Resubmit KYC</a>
+                            </div>
+                        {% else %}
+                            <p class="text-yellow-800 text-center p-4 bg-yellow-100 rounded-lg">Your automatic funding account is not yet active. Please complete your KYC verification to activate it.</p>
+                            <div class="text-center mt-4">
+                                <a href="{% url 'kyc_verification' %}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Complete KYC Now</a>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div x-show="selectedMethod.endsWith('_manual') || manualFormErrors" x-transition>
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
+                    <h3 class="text-lg font-semibold text-blue-900 mb-4">Manual Bank Transfer</h3>
+                    <p class="text-gray-700 mb-4">Please transfer the amount you wish to deposit to the bank account below. After payment, fill out the form and upload a screenshot of your transaction proof.</p>
+                    
+                    <div class="space-y-3 bg-white p-4 rounded-lg border mb-6">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-500">Bank Name</span>
+                            <span class="font-semibold text-gray-900">{{ manual_bank_details.bank_name }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-500">Account Number</span>
+                            <span class="font-bold text-lg text-blue-600">{{ manual_bank_details.account_number }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-500">Account Name</span>
+                            <span class="font-semibold text-gray-900">{{ manual_bank_details.account_name }}</span>
+                        </div>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" class="space-y-4" id="manualDepositForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="payment_method" :value="selectedMethod.split('_')[0]">
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Amount Deposited (₦) *</label>
+                            {{ manual_form.amount }}
+                            {% if manual_form.amount.errors %}<p class="text-red-600 text-xs mt-1">{{ manual_form.amount.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Your Full Name (Depositor) *</label>
+                            {{ manual_form.depositor_name }}
+                            {% if manual_form.depositor_name.errors %}<p class="text-red-600 text-xs mt-1">{{ manual_form.depositor_name.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Date & Time of Deposit *</label>
+                            {{ manual_form.deposit_date }}
+                            {% if manual_form.deposit_date.errors %}<p class="text-red-600 text-xs mt-1">{{ manual_form.deposit_date.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Upload Screenshot Proof *</label>
+                            {{ manual_form.screenshot }}
+                            {% if manual_form.screenshot.errors %}<p class="text-red-600 text-xs mt-1">{{ manual_form.screenshot.errors.0 }}</p>{% endif %}
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 font-semibold">Submit for Review</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="//unpkg.com/alpinejs" defer></script>
+{% endblock %}

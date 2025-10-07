@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Withdraw Money - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Withdraw Money</h1>
+
+        <!-- Current Balance -->
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <div class="text-center">
+                <p class="text-sm text-gray-600">Available Balance</p>
+                <p class="text-3xl font-bold text-gray-900">₦{{ current_balance|default:"0.00" }}</p>
+            </div>
+        </div>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Amount -->
+            <div>
+                <label for="amount" class="block text-sm font-medium text-gray-700">Amount to Withdraw (₦) *</label>
+                <input type="number" name="amount" id="amount" required min="500" step="0.01"
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                       placeholder="500.00">
+                <p class="text-xs text-gray-500 mt-1">Minimum withdrawal: ₦500</p>
+            </div>
+
+            <!-- Payment Method -->
+            <div>
+                <label for="payment_method" class="block text-sm font-medium text-gray-700">Withdrawal Method *</label>
+                <select name="payment_method" id="payment_method" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    <option value="">Select Withdrawal Method</option>
+                    {% for method in payment_methods %}
+                    <option value="{{ method.id }}">{{ method.get_name_display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Fee Information -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h3 class="font-semibold text-yellow-800 mb-2">Withdrawal Information</h3>
+                <div class="space-y-1 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-yellow-700">Withdrawal fee:</span>
+                        <span class="font-medium" id="withdrawalFee">₦0.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-yellow-700">Amount you'll receive:</span>
+                        <span class="font-medium" id="netAmount">₦0.00</span>
+                    </div>
+                </div>
+                <p class="text-yellow-700 text-xs mt-2">
+                    * {{ affiliate_settings.withdrawal_fee_rate|default:"1.0" }}% + ₦{{ affiliate_settings.withdrawal_fixed_fee|default:"50.00" }} withdrawal fee applies
+                </p>
+            </div>
+
+            <!-- Bank Account Selection (if bank transfer) -->
+            <div id="bankAccountSection" class="hidden">
+                <label for="bank_account" class="block text-sm font-medium text-gray-700">Select Bank Account</label>
+                <select name="bank_account" id="bank_account"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    <option value="">Select Bank Account</option>
+                    <!-- Bank accounts would be populated dynamically -->
+                </select>
+                <a href="{% url 'bank_account_add' %}" class="text-green-600 hover:text-green-700 text-xs mt-1 inline-block">
+                    + Add new bank account
+                </a>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                Request Withdrawal
+            </button>
+        </form>
+
+        <!-- Processing Time -->
+        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div class="flex items-center">
+                <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                <p class="text-blue-800 text-sm">
+                    Withdrawal requests are processed within 24-48 hours. You'll be notified once processed.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const feePercentage = {{ affiliate_settings.withdrawal_fee_rate|default:"1.0" }} / 100;
+const fixedFee = {{ affiliate_settings.withdrawal_fixed_fee|default:"50.00" }};
+const amountInput = document.getElementById('amount');
+const withdrawalFeeSpan = document.getElementById('withdrawalFee');
+const netAmountSpan = document.getElementById('netAmount');
+const paymentMethodSelect = document.getElementById('payment_method');
+const bankAccountSection = document.getElementById('bankAccountSection');
+
+function calculateFees() {
+    const amount = parseFloat(amountInput.value) || 0;
+    const withdrawalFee = (amount * feePercentage) + fixedFee;
+    const totalDebit = amount + withdrawalFee;
+    const netAmount = amount; // User receives the amount they requested
+
+    withdrawalFeeSpan.textContent = '₦' + withdrawalFee.toFixed(2);
+    netAmountSpan.textContent = '₦' + netAmount.toFixed(2);
+    
+    // Update the fee information section
+    const feeInfoSection = document.querySelector('.bg-yellow-50');
+    if (feeInfoSection) {
+        feeInfoSection.innerHTML = `
+            <h3 class="font-semibold text-yellow-800 mb-2">Withdrawal Information</h3>
+            <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-yellow-700">Withdrawal amount:</span>
+                    <span class="font-medium">₦${amount.toFixed(2)}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-yellow-700">Withdrawal fee:</span>
+                    <span class="font-medium">₦${withdrawalFee.toFixed(2)}</span>
+                </div>
+                <div class="flex justify-between border-t border-yellow-200 pt-1">
+                    <span class="text-yellow-800 font-semibold">Total debit:</span>
+                    <span class="font-bold text-yellow-800">₦${totalDebit.toFixed(2)}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-yellow-700">Amount you'll receive:</span>
+                    <span class="font-medium text-green-600">₦${netAmount.toFixed(2)}</span>
+                </div>
+            </div>
+            <p class="text-yellow-700 text-xs mt-2">
+                * ${feePercentage * 100}% + ₦${fixedFee} withdrawal fee applies
+            </p>
+        `;
+    }
+}
+
+function toggleBankAccountSection() {
+    const selectedMethod = paymentMethodSelect.options[paymentMethodSelect.selectedIndex].text;
+    if (selectedMethod.includes('Bank')) {
+        bankAccountSection.classList.remove('hidden');
+    } else {
+        bankAccountSection.classList.add('hidden');
+    }
+}
+
+amountInput.addEventListener('input', calculateFees);
+paymentMethodSelect.addEventListener('change', toggleBankAccountSection);
+
+// Initial calculations
+calculateFees();
+toggleBankAccountSection();
+</script>
+{% endblock %}

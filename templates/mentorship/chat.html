@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat with {{ enrollment.mentor.name }} - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Chat Header -->
+    <div class="bg-white rounded-lg shadow-lg p-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                {% if enrollment.mentor.mentor_picture %}
+                <img src="{{ enrollment.mentor.mentor_picture.url }}" alt="{{ enrollment.mentor.name }}" class="w-12 h-12 rounded-full object-cover">
+                {% else %}
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span class="font-bold text-blue-600">{{ enrollment.mentor.name|first|upper }}</span>
+                </div>
+                {% endif %}
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">{{ enrollment.mentor.name }}</h2>
+                    <p class="text-sm text-gray-500">{{ enrollment.mentor.expertise_area }}</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="text-right text-sm">
+                    <p class="text-gray-600">Status: 
+                        <span class="font-medium {% if enrollment.status == 'active' %}text-green-600{% else %}text-gray-600{% endif %}">
+                            {{ enrollment.get_status_display }}
+                        </span>
+                    </p>
+                    <p class="text-gray-500">Duration: {{ enrollment.mentor.duration }} hours</p>
+                </div>
+                
+                {% if is_mentor %}
+                <a href="{% url 'mentor_dashboard' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                    <i class="fas fa-dashboard mr-2"></i>Dashboard
+                </a>
+                {% else %}
+                <a href="{% url 'my_mentorships' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                    <i class="fas fa-arrow-left mr-2"></i>My Mentorships
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Messages -->
+    <div class="bg-white rounded-lg shadow-lg">
+        <div class="p-4 border-b">
+            <h3 class="font-semibold text-gray-900">
+                {% if is_mentor %}
+                Chat with {{ enrollment.student.get_display_name|default:enrollment.student.username }}
+                {% else %}
+                Chat with {{ enrollment.mentor.name }}
+                {% endif %}
+            </h3>
+        </div>
+        
+        <div class="h-96 overflow-y-auto p-4 space-y-4" id="chat-messages">
+            {% for message in messages %}
+            <div class="flex {% if message.sender == user %}justify-end{% else %}justify-start{% endif %}">
+                <div class="max-w-xs lg:max-w-md">
+                    <div class="flex items-center space-x-2 mb-1">
+                        {% if message.sender != user %}
+                        <span class="text-xs text-gray-500">{{ message.sender.get_display_name|default:message.sender.username }}</span>
+                        {% endif %}
+                        <span class="text-xs text-gray-400">{{ message.sent_at|date:"M d, H:i" }}</span>
+                    </div>
+                    <div class="{% if message.sender == user %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-900{% endif %} rounded-lg px-4 py-2">
+                        <p class="text-sm">{{ message.message|linebreaks }}</p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-8">
+                <i class="fas fa-comments text-gray-300 text-4xl mb-4"></i>
+                <p class="text-gray-500">No messages yet. Start the conversation!</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Message Input -->
+        {% if enrollment.status == 'active' %}
+        <div class="border-t p-4">
+            <form method="post" class="flex space-x-3">
+                {% csrf_token %}
+                <div class="flex-1">
+                    <textarea 
+                        name="message" 
+                        rows="2" 
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" 
+                        placeholder="Type your message..."
+                        required
+                    ></textarea>
+                </div>
+                <button 
+                    type="submit" 
+                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors self-end"
+                >
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+        {% else %}
+        <div class="border-t p-4 bg-gray-50">
+            <p class="text-center text-gray-500">
+                {% if enrollment.status == 'pending' %}
+                <i class="fas fa-clock mr-2"></i>Chat will be available once the mentorship is activated.
+                {% elif enrollment.status == 'completed' %}
+                <i class="fas fa-check-circle mr-2"></i>This mentorship has been completed.
+                {% elif enrollment.status == 'cancelled' %}
+                <i class="fas fa-times-circle mr-2"></i>This mentorship has been cancelled.
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Mentorship Info -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h3 class="font-semibold text-gray-900 mb-4">Mentorship Details</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div class="bg-gray-50 rounded-lg p-3">
+                <span class="text-gray-600">Enrolled:</span>
+                <span class="font-medium text-gray-900 block">{{ enrollment.enrolled_at|date:"M d, Y H:i" }}</span>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3">
+                <span class="text-gray-600">Amount Paid:</span>
+                <span class="font-medium text-green-600 block">₦{{ enrollment.purchase_price }}</span>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3">
+                <span class="text-gray-600">Tracking ID:</span>
+                <span class="font-mono text-xs text-gray-900 block">{{ enrollment.tracking_id }}</span>
+            </div>
+        </div>
+        
+        {% if enrollment.mentor.bio %}
+        <div class="mt-4 pt-4 border-t">
+            <h4 class="font-medium text-gray-900 mb-2">About {{ enrollment.mentor.name }}:</h4>
+            <p class="text-sm text-gray-600">{{ enrollment.mentor.bio }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Auto-scroll to bottom of chat messages
+document.addEventListener('DOMContentLoaded', function() {
+    const chatMessages = document.getElementById('chat-messages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+
+// Auto-refresh chat every 30 seconds
+setInterval(function() {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}

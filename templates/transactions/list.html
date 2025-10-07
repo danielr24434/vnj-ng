@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}Transaction History - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900">Transaction History</h1>
+        <p class="text-gray-600 mt-2">View your complete transaction history and track your earnings</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <select name="transaction_type" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    {{ form.transaction_type }}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select name="status" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    {{ form.status }}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <input type="date" name="start_date" value="{{ form.start_date.value|default:'' }}"
+                       class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <input type="date" name="end_date" value="{{ form.end_date.value|default:'' }}"
+                       class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                    Apply Filters
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Transactions List -->
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-200">
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-700">Date</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-700">Description</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-700">Type</th>
+                        <th class="text-right py-3 px-6 text-sm font-medium text-gray-700">Amount</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-700">Status</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-700">Reference</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-4 px-6 text-sm text-gray-600">
+                            {{ transaction.created_at|date:"M d, Y" }}<br>
+                            <span class="text-gray-400">{{ transaction.created_at|time:"H:i" }}</span>
+                        </td>
+                        <td class="py-4 px-6">
+                            <p class="font-medium text-gray-900">{{ transaction.description|truncatewords:8 }}</p>
+                            {% if transaction.payment_method %}
+                            <p class="text-sm text-gray-500">{{ transaction.payment_method.get_name_display }}</p>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6">
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium 
+                                      {% if transaction.is_credit %}bg-green-100 text-green-800
+                                      {% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ transaction.get_transaction_type_display }}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 text-right">
+                            <span class="font-semibold {% if transaction.is_credit %}text-green-600{% else %}text-red-600{% endif %}">
+                                {% if transaction.is_credit %}+{% else %}-{% endif %}₦{{ transaction.amount }}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6">
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium 
+                                      {% if transaction.status == 'completed' %}bg-green-100 text-green-800
+                                      {% elif transaction.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                      {% elif transaction.status == 'rejected' %}bg-red-100 text-red-800
+                                      {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ transaction.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm text-gray-500 font-mono">{{ transaction.reference }}</span>
+                                <button onclick="copyReference('{{ transaction.reference }}')" 
+                                        class="text-gray-400 hover:text-gray-600">
+                                    <i class="fas fa-copy text-xs"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Replace the empty state section in transactions/list.html -->
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-12 text-center">
+                            <i class="fas fa-receipt text-gray-300 text-4xl mb-3"></i>
+                            <p class="text-gray-500">No transactions found</p>
+                            <p class="text-gray-400 text-sm mt-1">Your transactions will appear here once you start using the platform</p>
+                            <div class="mt-4 space-x-2">
+                                <a href="{% url 'add_money' %}" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">
+                                    Add Money
+                                </a>
+                                <a href="{% url 'products_list' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
+                                    Browse Products
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="bg-white px-6 py-4 border-t border-gray-200">
+            <div class="flex justify-between items-center">
+                <div class="text-sm text-gray-700">
+                    Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} transactions
+                </div>
+                <div class="flex space-x-2">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                       class="bg-white border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-50">
+                        Previous
+                    </a>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <span class="bg-green-600 text-white px-3 py-1 rounded text-sm">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                           class="bg-white border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-50">
+                            {{ num }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                       class="bg-white border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-50">
+                        Next
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Export Options -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h3 class="font-semibold text-gray-900">Export Transactions</h3>
+                <p class="text-gray-600 text-sm">Download your transaction history for record keeping</p>
+            </div>
+            <div class="flex space-x-3">
+                <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm">
+                    <i class="fas fa-file-excel mr-2"></i>Export to Excel
+                </button>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                    <i class="fas fa-file-pdf mr-2"></i>Export to PDF
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyReference(reference) {
+    navigator.clipboard.writeText(reference).then(() => {
+        // Show a small toast notification
+        const toast = document.createElement('div');
+        toast.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+        toast.textContent = 'Reference copied!';
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 2000);
+    });
+}
+</script>
+{% endblock %}

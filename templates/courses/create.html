@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Course - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Create New Course</h1>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Course Title -->
+            <div>
+                <label for="title" class="block text-sm font-medium text-gray-700">Course Title *</label>
+                <input type="text" name="title" id="title" required 
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                       placeholder="e.g., Web Development Fundamentals">
+            </div>
+
+            <!-- Course Description -->
+            <div>
+                <label for="description" class="block text-sm font-medium text-gray-700">Course Description *</label>
+                <textarea name="description" id="description" rows="4" required 
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                          placeholder="Describe what students will learn in this course..."></textarea>
+            </div>
+
+            <!-- Course Details -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="category" class="block text-sm font-medium text-gray-700">Category *</label>
+                    {{ form.category }}
+                </div>
+                <div>
+                    <label for="level" class="block text-sm font-medium text-gray-700">Level *</label>
+                    <select name="level" id="level" required 
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Duration & Mode -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="duration" class="block text-sm font-medium text-gray-700">Duration (hours) *</label>
+                    <input type="number" name="duration" id="duration" required min="1"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                </div>
+
+                <div>
+                    <label for="mode" class="block text-sm font-medium text-gray-700">Mode *</label>
+                    <select name="mode" id="mode" required 
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        <option value="online">Online</option>
+                        <option value="offline">Offline</option>
+                        <option value="hybrid">Hybrid</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Start Date & Self-Paced -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date *</label>
+                    <input type="datetime-local" name="start_date" id="start_date" 
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                </div>
+
+                <div class="flex items-center">
+                    <input type="checkbox" name="is_self_paced" id="is_self_paced" 
+                           class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                    <label for="is_self_paced" class="ml-2 block text-sm text-gray-700">
+                        Self-paced course
+                    </label>
+                </div>
+            </div>
+
+            <!-- Pricing & Capacity -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="price" class="block text-sm font-medium text-gray-700">Price (₦) *</label>
+                    <input type="number" name="price" id="price" required min="0" step="0.01"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                </div>
+
+                <div>
+                    <label for="spots_total" class="block text-sm font-medium text-gray-700">Total Spots *</label>
+                    <input type="number" name="spots_total" id="spots_total" required min="1"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                </div>
+            </div>
+
+            <!-- Media -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="preview_video" class="block text-sm font-medium text-gray-700">Preview Video URL</label>
+                    <input type="url" name="preview_video" id="preview_video" 
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                           placeholder="https://youtube.com/embed/...">
+                </div>
+
+                <div>
+                    <label for="thumbnail" class="block text-sm font-medium text-gray-700">Course Thumbnail</label>
+                    <input type="file" name="thumbnail" id="thumbnail" accept="image/*"
+                           class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
+                </div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="flex justify-end space-x-3 pt-6">
+                <a href="{% url 'courses_list' %}" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                    Create Course
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('is_self_paced').addEventListener('change', function() {
+    const startDateField = document.getElementById('start_date');
+    if (this.checked) {
+        startDateField.removeAttribute('required');
+        startDateField.disabled = true;
+    } else {
+        startDateField.setAttribute('required', 'required');
+        startDateField.disabled = false;
+    }
+});
+</script>
+{% endblock %}

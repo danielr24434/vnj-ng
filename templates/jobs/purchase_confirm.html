@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Confirm Job Purchase{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-shopping-cart"></i>
+                        Confirm Job Purchase
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Job Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            {% if job.company_logo %}
+                                <img src="{{ job.company_logo.url }}" alt="{{ job.company_name }}" 
+                                     class="img-fluid rounded" style="max-height: 150px;">
+                            {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                     style="height: 150px;">
+                                    <i class="fas fa-building fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <h5>{{ job.title }}</h5>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-building"></i> {{ job.company_name }}
+                            </p>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-map-marker-alt"></i> {{ job.location }}
+                            </p>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-briefcase"></i> {{ job.get_job_type_display }}
+                            </p>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-user"></i> Posted by: {{ job.posted_by.get_full_name|default:job.posted_by.username }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Purchase Summary -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="card-title">Purchase Summary</h6>
+                            <div class="row">
+                                <div class="col-6">
+                                    <p class="mb-2">Job Price:</p>
+                                    <p class="mb-2">Admin Fee (5%):</p>
+                                    <hr>
+                                    <p class="mb-2"><strong>Total Amount:</strong></p>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <p class="mb-2">₦{{ job.price|floatformat:2 }}</p>
+                                    <p class="mb-2">₦{{ admin_fee|floatformat:2 }}</p>
+                                    <hr>
+                                    <p class="mb-2"><strong>₦{{ job.price|floatformat:2 }}</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Balance Info -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-wallet"></i>
+                        <strong>Your Current Balance:</strong> ₦{{ user_balance|floatformat:2 }}
+                        <br>
+                        <strong>Balance After Purchase:</strong> ₦{{ user_balance|add:"-"|add:job.price|floatformat:2 }}
+                    </div>
+
+                    <!-- Seller Info -->
+                    <div class="alert alert-secondary">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Seller will receive:</strong> ₦{{ net_amount|floatformat:2 }} (after admin fee)
+                    </div>
+
+                    <!-- Purchase Form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'job_detail' job.pk %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-credit-card"></i> Confirm Purchase
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

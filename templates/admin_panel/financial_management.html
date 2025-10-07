@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Financial Management - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900">Financial Management</h1>
+        <p class="text-gray-600 mt-2">Manage withdrawals, deposits, and platform finances</p>
+    </div>
+
+    <!-- Financial Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <i class="fas fa-money-bill-wave text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Platform Earnings</p>
+                    <p class="text-2xl font-bold text-gray-900">₦{{ total_earnings|default:"0.00" }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                    <i class="fas fa-clock text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Pending Withdrawals</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ withdrawal_requests.count }}</p>
+                </div>
+            </div>
+        </div>
+                <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                    <i class="fas fa-clock text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Pending Manual Deposit</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ manual_deposit_requests.count }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <i class="fas fa-exchange-alt text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Pending Auto Deposits</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ deposit_requests.count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Withdrawal Requests -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Withdrawal Requests</h2>
+            <div class="space-y-4">
+                {% for withdrawal in withdrawal_requests %}
+                <div class="border rounded-lg p-4">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="font-semibold text-gray-900">{{ withdrawal.user.get_display_name }}</h3>
+                            <p class="text-sm text-gray-600">@{{ withdrawal.user.username }}</p>
+                        </div>
+                        <span class="text-green-600 font-semibold">₦{{ withdrawal.amount }}</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center text-sm text-gray-500">
+                        <span>{{ withdrawal.created_at|timesince }} ago</span>
+                        <span>{{ withdrawal.get_payment_method_display }}</span>
+                    </div>
+                    
+                    <div class="flex space-x-2 mt-3">
+                        <form method="post" action="{% url 'process_transaction' withdrawal.id 'approve' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                                Approve
+                            </button>
+                        </form>
+                        <form method="post" action="{% url 'process_transaction' withdrawal.id 'reject' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">
+                                Reject
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-gray-500 text-center py-4">No pending withdrawal requests.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Auto Deposit Requests -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Auto Deposit Requests</h2>
+            <div class="space-y-4">
+                {% for deposit in deposit_requests %}
+                <div class="border rounded-lg p-4">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="font-semibold text-gray-900">{{ deposit.user.get_display_name }}</h3>
+                            <p class="text-sm text-gray-600">@{{ deposit.user.username }}</p>
+                        </div>
+                        <span class="text-blue-600 font-semibold">₦{{ deposit.amount }}</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center text-sm text-gray-500">
+                        <span>{{ deposit.created_at|timesince }} ago</span>
+                        <span>{{ deposit.get_payment_method_display }}</span>
+                    </div>
+                    
+                    <div class="flex space-x-2 mt-3">
+                        <form method="post" action="{% url 'process_transaction' deposit.id 'approve' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                                Approve
+                            </button>
+                        </form>
+                        <form method="post" action="{% url 'process_transaction' deposit.id 'reject' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">
+                                Reject
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-gray-500 text-center py-4">No pending deposit requests.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+
+           <!-- Manual Deposit Requests -->
+           <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Manual Deposit Requests</h2>
+            <div class="space-y-4">
+                {% for deposit in manual_deposit_requests %}
+                <div class="border rounded-lg p-4">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="font-semibold text-gray-900">{{ deposit.user.get_display_name }}</h3>
+                            <p class="text-sm text-gray-600">@{{ deposit.user.username }}</p>
+                        </div>
+                        <span class="text-blue-600 font-semibold">₦{{ deposit.amount }}</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center text-sm text-gray-500">
+                        <span>{{ deposit.created_at|timesince }} ago</span>
+                        <span>{{ deposit.get_payment_method_display }}</span>
+                    </div>
+                    
+                    <div class="flex space-x-2 mt-3">
+                        <form method="post" action="{% url 'manual_deposit_detail' deposit.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                                Review Proof
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-gray-500 text-center py-4">No pending manual deposit requests.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+
+
+</div>
+{% endblock %}

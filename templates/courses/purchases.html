@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-graduation-cap"></i>
+                        {{ title }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if purchases %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Course</th>
+                                        <th>Instructor</th>
+                                        <th>Duration</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Purchase Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for purchase in purchases %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if purchase.course.thumbnail %}
+                                                    <img src="{{ purchase.course.thumbnail.url }}" 
+                                                         alt="{{ purchase.course.title }}" 
+                                                         class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                                {% else %}
+                                                    <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" 
+                                                         style="width: 40px; height: 40px;">
+                                                        <i class="fas fa-graduation-cap text-muted"></i>
+                                                    </div>
+                                                {% endif %}
+                                                <div>
+                                                    <strong>{{ purchase.course.title }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">{{ purchase.course.get_level_display }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ purchase.seller.get_full_name|default:purchase.seller.username }}</td>
+                                        <td>{{ purchase.course.duration }} hours</td>
+                                        <td>₦{{ purchase.purchase_price|floatformat:2 }}</td>
+                                        <td>
+                                            {% if purchase.status == 'completed' %}
+                                                <span class="badge bg-success">Completed</span>
+                                            {% elif purchase.status == 'pending' %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% elif purchase.status == 'refunded' %}
+                                                <span class="badge bg-info">Refunded</span>
+                                            {% elif purchase.status == 'cancelled' %}
+                                                <span class="badge bg-danger">Cancelled</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ purchase.purchased_at|date:"M d, Y H:i" }}</td>
+                                        <td>
+                                            <a href="{% url 'course_detail' purchase.course.pk %}" 
+                                               class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-eye"></i> View Course
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No purchases yet</h5>
+                            <p class="text-muted">You haven't purchased any courses yet.</p>
+                            <a href="{% url 'courses_list' %}" class="btn btn-success">
+                                <i class="fas fa-search"></i> Browse Courses
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.get_display_name }} - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Profile Header -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div class="flex items-center space-x-6">
+            <div class="relative">
+                {% if profile_user.profile.profile_picture %}
+                    <img src="{{ profile_user.profile.profile_picture.url }}" alt="Profile Picture" 
+                         class="w-24 h-24 rounded-full object-cover border-4 border-green-500">
+                {% else %}
+                    <div class="w-24 h-24 rounded-full bg-green-100 border-4 border-green-500 flex items-center justify-center">
+                        <span class="text-2xl font-bold text-green-600">{{ profile_user.username|first|upper }}</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="flex-1">
+                <h1 class="text-2xl font-bold text-gray-900">{{ profile_user.get_display_name }}</h1>
+                <p class="text-gray-600">@{{ profile_user.username }}</p>
+                <div class="flex items-center space-x-4 mt-2">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        <i class="fas fa-crown mr-1"></i>
+                        {{ profile_user.get_subscription_level_display }}
+                    </span>
+                    <span class="text-gray-500">Member since {{ profile_user.date_joined|date:"M Y" }}</span>
+                    {% if profile_user.profile.country %}
+                    <span class="text-gray-500">
+                        <i class="fas fa-map-marker-alt mr-1"></i>{{ profile_user.profile.country }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Bio -->
+        {% if profile_user.profile.bio %}
+        <div class="mt-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-2">About</h2>
+            <p class="text-gray-700">{{ profile_user.profile.bio }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow p-4 text-center">
+            <div class="text-2xl font-bold text-green-600">{{ total_posts }}</div>
+            <div class="text-sm text-gray-600">Total Posts</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 text-center">
+            <div class="text-2xl font-bold text-green-600">{{ user_jobs.count }}</div>
+            <div class="text-sm text-gray-600">Jobs Posted</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 text-center">
+            <div class="text-2xl font-bold text-green-600">{{ user_courses.count }}</div>
+            <div class="text-sm text-gray-600">Courses</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 text-center">
+            <div class="text-2xl font-bold text-green-600">{{ referral_count }}</div>
+            <div class="text-sm text-gray-600">Referrals</div>
+        </div>
+    </div>
+
+    <!-- User Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Jobs -->
+        {% if user_jobs %}
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Recent Jobs</h2>
+            <div class="space-y-3">
+                {% for job in user_jobs %}
+                <div class="border rounded-lg p-3 hover:border-green-500 transition-colors">
+                    <h3 class="font-semibold text-gray-900">
+                        <a href="{% url 'job_detail' job.pk %}" class="hover:text-green-600">{{ job.title }}</a>
+                    </h3>
+                    <p class="text-sm text-gray-600">{{ job.company_name }} • {{ job.location }}</p>
+                    <p class="text-green-600 font-semibold text-sm">₦{{ job.salary_min }} - ₦{{ job.salary_max }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Courses -->
+        {% if user_courses %}
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Courses</h2>
+            <div class="space-y-3">
+                {% for course in user_courses %}
+                <div class="border rounded-lg p-3 hover:border-green-500 transition-colors">
+                    <h3 class="font-semibold text-gray-900">
+                        <a href="{% url 'course_detail' course.pk %}" class="hover:text-green-600">{{ course.title }}</a>
+                    </h3>
+                    <p class="text-sm text-gray-600">{{ course.get_level_display }} • {{ course.duration }}h</p>
+                    <p class="text-green-600 font-semibold text-sm">₦{{ course.price }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Products -->
+        {% if user_products %}
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Products</h2>
+            <div class="space-y-3">
+                {% for product in user_products %}
+                <div class="border rounded-lg p-3 hover:border-green-500 transition-colors">
+                    <h3 class="font-semibold text-gray-900">
+                        <a href="{% url 'product_detail' product.pk %}" class="hover:text-green-600">{{ product.title }}</a>
+                    </h3>
+                    <p class="text-sm text-gray-600">{{ product.get_license_type_display }} • v{{ product.version }}</p>
+                    <p class="text-green-600 font-semibold text-sm">₦{{ product.price }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Blog Posts -->
+        {% if user_blog_posts %}
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Blog Posts</h2>
+            <div class="space-y-3">
+                {% for post in user_blog_posts %}
+                <div class="border rounded-lg p-3 hover:border-green-500 transition-colors">
+                    <h3 class="font-semibold text-gray-900">
+                        <a href="{% url 'blog_detail' post.slug %}" class="hover:text-green-600">{{ post.title }}</a>
+                    </h3>
+                    <p class="text-sm text-gray-600">{{ post.published_at|date:"M d, Y" }} • {{ post.views_count }} views</p>
+                    <p class="text-gray-700 text-sm">{{ post.excerpt|default:post.content|truncatewords:15 }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Empty State -->
+    {% if not user_jobs and not user_courses and not user_products and not user_blog_posts %}
+    <div class="bg-white rounded-lg shadow-lg p-12 text-center">
+        <i class="fas fa-user text-gray-300 text-4xl mb-3"></i>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">No Content Yet</h3>
+        <p class="text-gray-600">{{ profile_user.get_display_name }} hasn't posted any content yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

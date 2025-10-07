@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block title %}Mentor Dashboard - {{ mentor.name }} - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex items-center space-x-4">
+            {% if mentor.mentor_picture %}
+            <img src="{{ mentor.mentor_picture.url }}" alt="{{ mentor.name }}" class="w-20 h-20 rounded-full object-cover">
+            {% else %}
+            <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
+                <span class="font-bold text-blue-600 text-2xl">{{ mentor.name|first|upper }}</span>
+            </div>
+            {% endif %}
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">{{ mentor.name }}</h1>
+                <p class="text-gray-600">@{{ mentor.username }}</p>
+                <p class="text-sm text-gray-500">{{ mentor.expertise_area }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100">
+                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-600">Total Students</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ mentor.people_mentored_count }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100">
+                    <i class="fas fa-chair text-green-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-600">Available Slots</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ mentor.available_slots }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100">
+                    <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-600">Duration</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ mentor.duration }}h</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100">
+                    <i class="fas fa-money-bill text-purple-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-600">Price</p>
+                    <p class="text-2xl font-bold text-gray-900">₦{{ mentor.price }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Students -->
+    <div class="bg-white rounded-lg shadow-lg">
+        <div class="p-6 border-b">
+            <h2 class="text-xl font-semibold text-gray-900">My Students</h2>
+            <p class="text-gray-600">Manage your current mentorship enrollments</p>
+        </div>
+        
+        <div class="divide-y">
+            {% for enrollment in enrollments %}
+            <div class="p-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                            <span class="font-semibold text-gray-600">{{ enrollment.student.username|first|upper }}</span>
+                        </div>
+                        <div>
+                            <h3 class="font-medium text-gray-900">{{ enrollment.student.get_display_name|default:enrollment.student.username }}</h3>
+                            <p class="text-sm text-gray-500">@{{ enrollment.student.username }}</p>
+                            <p class="text-xs text-gray-400">Enrolled: {{ enrollment.enrolled_at|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Status -->
+                        {% if enrollment.status == 'active' %}
+                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                            <i class="fas fa-check-circle mr-1"></i>Active
+                        </span>
+                        {% elif enrollment.status == 'pending' %}
+                        <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                            <i class="fas fa-clock mr-1"></i>Pending
+                        </span>
+                        {% elif enrollment.status == 'completed' %}
+                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                            <i class="fas fa-graduation-cap mr-1"></i>Completed
+                        </span>
+                        {% endif %}
+                        
+                        <!-- Chat Button -->
+                        {% if enrollment.status == 'active' %}
+                        <a href="{% url 'mentorship_chat' enrollment.tracking_id %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                            <i class="fas fa-comments mr-2"></i>Chat
+                        </a>
+                        {% elif enrollment.status == 'completed' %}
+                        <a href="{% url 'mentorship_chat' enrollment.tracking_id %}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm">
+                            <i class="fas fa-history mr-2"></i>History
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Enrollment Details -->
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <span class="text-gray-600">Amount Paid:</span>
+                        <span class="font-medium text-green-600 block">₦{{ enrollment.purchase_price }}</span>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <span class="text-gray-600">Your Earnings:</span>
+                        <span class="font-medium text-blue-600 block">₦{{ enrollment.net_amount }}</span>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <span class="text-gray-600">Tracking ID:</span>
+                        <span class="font-mono text-xs text-gray-900 block">{{ enrollment.tracking_id }}</span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="p-12 text-center">
+                <i class="fas fa-user-graduate text-gray-300 text-6xl mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">No students yet</h3>
+                <p class="text-gray-600">Students will appear here once they enroll with you.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Mentor Profile -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Your Profile</h2>
+        <div class="space-y-4">
+            <div>
+                <h3 class="font-medium text-gray-900">Bio</h3>
+                <p class="text-gray-600 text-sm">{{ mentor.bio }}</p>
+            </div>
+            
+            {% if mentor.email or mentor.phone %}
+            <div>
+                <h3 class="font-medium text-gray-900">Contact Information</h3>
+                <div class="text-sm text-gray-600 space-y-1">
+                    {% if mentor.email %}
+                    <p><i class="fas fa-envelope mr-2"></i>{{ mentor.email }}</p>
+                    {% endif %}
+                    {% if mentor.phone %}
+                    <p><i class="fas fa-phone mr-2"></i>{{ mentor.phone }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-blue-600 text-lg mr-3 mt-0.5"></i>
+                    <div class="text-sm">
+                        <h4 class="font-medium text-blue-800">Mentor Information</h4>
+                        <p class="text-blue-700 mt-1">
+                            Your profile is managed by the admin. If you need to update any information, 
+                            please contact the site administrator.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

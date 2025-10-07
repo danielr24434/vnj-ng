@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Mentorship - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900">Manage Mentorship</h1>
+        <p class="text-gray-600 mt-2">Manage your mentorship offers and applications</p>
+    </div>
+
+    {% if user.subscription_level == 'mentorship' %}
+    <!-- Mentorship Offers Section -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-lg font-semibold text-gray-900">My Mentorship Offers</h2>
+            <a href="{% url 'mentorship_create' %}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                <i class="fas fa-plus mr-2"></i>New Offer
+            </a>
+        </div>
+
+        <div class="space-y-4">
+            {% for offer in offers %}
+            <div class="border rounded-lg p-4 hover:border-green-500 transition-colors">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900">{{ offer.title }}</h3>
+                        <p class="text-gray-600 text-sm mt-1">{{ offer.expertise_area }}</p>
+                        <div class="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                            <span>₦{{ offer.price_per_hour }}/hour</span>
+                            <span>{{ offer.current_students }}/{{ offer.max_students }} students</span>
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                                {{ offer.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <a href="#" class="text-blue-600 hover:text-blue-700 text-sm">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="#" class="text-red-600 hover:text-red-700 text-sm">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-8">
+                <i class="fas fa-users text-gray-300 text-4xl mb-3"></i>
+                <p class="text-gray-500">You haven't created any mentorship offers yet.</p>
+                <a href="{% url 'mentorship_create' %}" class="text-green-600 hover:text-green-700 text-sm mt-2 inline-block">
+                    Create your first offer
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Applications Section -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-6">Mentorship Applications</h2>
+
+        <div class="space-y-4">
+            {% for application in applications %}
+            <div class="border rounded-lg p-4">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-3 mb-2">
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                <span class="font-semibold text-green-600">{{ application.applicant.username|first|upper }}</span>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900">{{ application.applicant.get_display_name }}</p>
+                                <p class="text-sm text-gray-500">Applied for {{ application.mentorship_offer.title }}</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-2">{{ application.application_message|truncatewords:30 }}</p>
+                        <div class="flex items-center space-x-4 text-sm text-gray-500">
+                            <span>{{ application.requested_duration }} hours</span>
+                            <span>₦{{ application.total_amount }}</span>
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+                                {{ application.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        {% if application.status == 'pending' %}
+                        <button class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                            Approve
+                        </button>
+                        <button class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">
+                            Reject
+                        </button>
+                        {% elif application.status == 'approved' %}
+                        <button class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                            Complete
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-8">
+                <i class="fas fa-file-alt text-gray-300 text-4xl mb-3"></i>
+                <p class="text-gray-500">No mentorship applications yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Non-Mentorship User View -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">My Mentorship Applications</h2>
+        
+        <div class="space-y-4">
+            {% for application in applications %}
+            <div class="border rounded-lg p-4">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900">{{ application.mentorship_offer.title }}</h3>
+                        <p class="text-gray-600 text-sm mt-1">by {{ application.mentorship_offer.mentor.get_display_name }}</p>
+                        <div class="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                            <span>{{ application.requested_duration }} hours</span>
+                            <span>₦{{ application.total_amount }}</span>
+                            <span class="{% if application.status == 'approved' %}bg-green-100 text-green-800
+                                       {% elif application.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                       {% else %}bg-red-100 text-red-800{% endif %} px-2 py-1 rounded text-xs">
+                                {{ application.get_status_display }}
+                            </span>
+                        </div>
+                        {% if application.application_message %}
+                        <p class="text-gray-600 text-sm mt-2">{{ application.application_message|truncatewords:20 }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500">{{ application.applied_at|date:"M d, Y" }}</p>
+                        {% if application.status == 'approved' %}
+                        <button class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 mt-2">
+                            Start Session
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-8">
+                <i class="fas fa-file-alt text-gray-300 text-4xl mb-3"></i>
+                <p class="text-gray-500">You haven't applied to any mentorship programs yet.</p>
+                <a href="{% url 'mentorship_list' %}" class="text-green-600 hover:text-green-700 text-sm mt-2 inline-block">
+                    Browse mentorship programs
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

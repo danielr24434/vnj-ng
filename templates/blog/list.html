@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}Blog - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Vinaji Blog (Vlogt)</h1>
+            <p class="text-gray-600">Insights, tips, and updates from the Vinaji community</p>
+        </div>
+        {% if user.is_authenticated %}
+        <a href="{% url 'blog_create' %}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+            <i class="fas fa-plus mr-2"></i>Write Post
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Featured Post -->
+    {% for post in posts %}
+        {% if post.is_featured and forloop.first %}
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            {% if post.featured_image %}
+            <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" class="w-full h-64 object-cover">
+            {% endif %}
+            <div class="p-6">
+                <div class="flex items-center space-x-2 mb-3">
+                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">Featured</span>
+                    {% if post.category %}
+                    <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-medium">{{ post.category.name }}</span>
+                    {% endif %}
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-3">
+                    <a href="{% url 'blog_detail' post.slug %}" class="hover:text-green-600">{{ post.title }}</a>
+                </h2>
+                <p class="text-gray-600 mb-4">{{ post.excerpt|default:post.content|truncatewords:30 }}</p>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                            <span class="text-green-600 text-sm font-semibold">{{ post.author.username|first|upper }}</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">{{ post.author.get_display_name }}</p>
+                            <p class="text-xs text-gray-500">{{ post.published_at|date:"F d, Y" }} • {{ post.views_count }} views</p>
+                        </div>
+                    </div>
+                    <a href="{% url 'blog_detail' post.slug %}" class="text-green-600 hover:text-green-700 font-medium">
+                        Read More →
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex flex-wrap gap-4">
+            <!-- Categories -->
+            <div class="flex items-center space-x-2">
+                <span class="text-sm font-medium text-gray-700">Categories:</span>
+                <div class="flex flex-wrap gap-2">
+                    <a href="{% url 'blog_list' %}" 
+                       class="px-3 py-1 rounded-full text-sm {% if not request.GET.category %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800 hover:bg-gray-200{% endif %}">
+                        All
+                    </a>
+                    {% for category in categories %}
+                    <a href="?category={{ category.name }}" 
+                       class="px-3 py-1 rounded-full text-sm {% if request.GET.category == category.name %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800 hover:bg-gray-200{% endif %}">
+                        {{ category.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Search -->
+            <div class="flex-1 min-w-64">
+                <form method="get" class="flex space-x-2">
+                    <input type="text" name="search" value="{{ request.GET.search }}" 
+                           placeholder="Search posts..." 
+                           class="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Posts Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for post in posts %}
+            {% if not post.is_featured or not forloop.first %}
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                {% if post.featured_image %}
+                <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" class="w-full h-48 object-cover">
+                {% else %}
+                <div class="w-full h-48 bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
+                    <i class="fas fa-newspaper text-white text-4xl"></i>
+                </div>
+                {% endif %}
+                
+                <div class="p-6">
+                    <div class="flex items-center space-x-2 mb-3">
+                        {% if post.category %}
+                        <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-medium">{{ post.category.name }}</span>
+                        {% endif %}
+                        {% if post.is_featured %}
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">Featured</span>
+                        {% endif %}
+                    </div>
+                    
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                        <a href="{% url 'blog_detail' post.slug %}" class="hover:text-green-600">{{ post.title }}</a>
+                    </h3>
+                    
+                    <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ post.excerpt|default:post.content|truncatewords:20 }}</p>
+                    
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                        <div class="flex items-center space-x-2">
+                            <span>{{ post.published_at|date:"M d, Y" }}</span>
+                            <span>•</span>
+                            <span>{{ post.views_count }} views</span>
+                        </div>
+                        <span>{{ post.read_time }} min read</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                                <span class="text-green-600 text-xs font-semibold">{{ post.author.username|first|upper }}</span>
+                            </div>
+                            <span class="text-sm text-gray-600">{{ post.author.username }}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button class="text-gray-400 hover:text-green-600 transition-colors">
+                                <i class="far fa-heart"></i>
+                                <span class="text-xs ml-1">{{ post.likes.count }}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% empty %}
+        <div class="md:col-span-3 bg-white rounded-lg shadow-lg p-12 text-center">
+            <i class="fas fa-newspaper text-gray-300 text-6xl mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">No posts found</h3>
+            <p class="text-gray-600 mb-4">Try adjusting your search filters or create a new post.</p>
+            {% if user.is_authenticated %}
+            <a href="{% url 'blog_create' %}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                Write Your First Post
+            </a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="flex justify-center items-center space-x-2">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+           class="bg-white border border-gray-300 px-3 py-2 rounded-md hover:bg-gray-50">
+            Previous
+        </a>
+        {% endif %}
+
+        <span class="text-gray-700">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+           class="bg-white border border-gray-300 px-3 py-2 rounded-md hover:bg-gray-50">
+            Next
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

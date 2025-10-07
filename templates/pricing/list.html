@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Subscription Plans - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div class="text-center">
+        <h1 class="text-3xl font-bold text-gray-900">Choose Your Plan</h1>
+        <p class="text-gray-600 mt-2 max-w-2xl mx-auto">
+            Select the perfect plan to unlock your earning potential on Vinaji NG. 
+            Upgrade anytime to access more features and higher commissions.
+        </p>
+    </div>
+
+    <!-- Current Plan Badge -->
+    {% if user.is_authenticated %}
+    <div class="text-center">
+        <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
+            Current Plan: {{ user.get_subscription_level_display }}
+        </span>
+    </div>
+    {% endif %}
+
+    <!-- Plans Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        {% for plan in plans %}
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden 
+                   {% if plan.name == 'pro' %}ring-2 ring-green-500 transform scale-105{% endif %}">
+            <!-- Plan Header -->
+            <div class="bg-gradient-to-r 
+                       {% if plan.name == 'starter' %}from-gray-400 to-gray-600
+                       {% elif plan.name == 'pro' %}from-green-500 to-green-700
+                       {% else %}from-purple-500 to-purple-700{% endif %} 
+                       p-6 text-white text-center">
+                <h3 class="text-xl font-bold">{{ plan.get_name_display }}</h3>
+                <div class="mt-4">
+                    <span class="text-4xl font-bold">₦{{ plan.price }}</span>
+                    <span class="text-white/80">/month</span>
+                </div>
+                <p class="text-white/80 text-sm mt-2">{{ plan.description }}</p>
+            </div>
+
+            <!-- Plan Features -->
+            <div class="p-6">
+                <ul class="space-y-3">
+                    {% for feature in plan.features %}
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span class="text-gray-700">{{ feature }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <!-- Action Button -->
+                <div class="mt-8">
+                    {% if user.is_authenticated %}
+                        {% if user.subscription_level == plan.name %}
+                        <button class="w-full bg-gray-400 text-white py-3 rounded-lg font-semibold cursor-not-allowed" disabled>
+                            Current Plan
+                        </button>
+                        {% else %}
+                        <a href="{% url 'subscribe' %}?plan={{ plan.id }}" 
+                           class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold block text-center">
+                            {% if user.subscription_level == 'starter' and plan.name != 'starter' %}
+                                Upgrade to {{ plan.get_name_display }}
+                            {% elif user.subscription_level == 'pro' and plan.name == 'mentorship' %}
+                                Upgrade to Mentorship
+                            {% else %}
+                                Get Started
+                            {% endif %}
+                        </a>
+                        {% endif %}
+                    {% else %}
+                    <a href="{% url 'register' %}?next={% url 'subscribe' %}?plan={{ plan.id }}" 
+                       class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold block text-center">
+                        Get Started
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Popular Badge -->
+            {% if plan.name == 'pro' %}
+            <div class="bg-green-500 text-white text-center py-2">
+                <span class="text-sm font-semibold">MOST POPULAR</span>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Feature Comparison -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mt-12">
+        <h2 class="text-2xl font-bold text-gray-900 text-center mb-8">Plan Comparison</h2>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200">
+                        <th class="text-left py-4 px-6 text-sm font-medium text-gray-700">Feature</th>
+                        <th class="text-center py-4 px-6 text-sm font-medium text-gray-700">Starter</th>
+                        <th class="text-center py-4 px-6 text-sm font-medium text-gray-700">Pro</th>
+                        <th class="text-center py-4 px-6 text-sm font-medium text-gray-700">Mentorship</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-gray-100">
+                        <td class="py-4 px-6 text-sm text-gray-700">Job Listings</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">5/month</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">Unlimited</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">Unlimited</td>
+                    </tr>
+                    <tr class="border-b border-gray-100">
+                        <td class="py-4 px-6 text-sm text-gray-700">Course Creation</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">1/month</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">5/month</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">Unlimited</td>
+                    </tr>
+                    <tr class="border-b border-gray-100">
+                        <td class="py-4 px-6 text-sm text-gray-700">Product Sales</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">-</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">✓</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">✓</td>
+                    </tr>
+                    <tr class="border-b border-gray-100">
+                        <td class="py-4 px-6 text-sm text-gray-700">Affiliate Program</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">-</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">✓</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">✓</td>
+                    </tr>
+                    <tr class="border-b border-gray-100">
+                        <td class="py-4 px-6 text-sm text-gray-700">Mentorship Program</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">-</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">-</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">✓</td>
+                    </tr>
+                    <tr class="border-b border-gray-100">
+                        <td class="py-4 px-6 text-sm text-gray-700">Commission Rate</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">15%</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">20%</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">25%</td>
+                    </tr>
+                    <tr>
+                        <td class="py-4 px-6 text-sm text-gray-700">Priority Support</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">-</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">✓</td>
+                        <td class="py-4 px-6 text-center text-sm text-gray-600">✓</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mt-8">
+        <h2 class="text-2xl font-bold text-gray-900 text-center mb-8">Frequently Asked Questions</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <h3 class="font-semibold text-gray-900 mb-2">Can I change my plan later?</h3>
+                <p class="text-gray-600 text-sm">
+                    Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.
+                </p>
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-900 mb-2">Is there a free trial?</h3>
+                <p class="text-gray-600 text-sm">
+                    The Starter plan is free forever. For Pro and Mentorship plans, we offer a 7-day money-back guarantee.
+                </p>
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-900 mb-2">How are payments processed?</h3>
+                <p class="text-gray-600 text-sm">
+                    We use secure payment processors and support multiple payment methods including cards, bank transfers, and cryptocurrency.
+                </p>
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-900 mb-2">Can I cancel anytime?</h3>
+                <p class="text-gray-600 text-sm">
+                    Yes, you can cancel your subscription anytime. Your account will revert to the Starter plan at the end of your billing period.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

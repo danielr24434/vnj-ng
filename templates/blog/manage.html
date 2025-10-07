@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Posts - Vinaji Blog{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900">Manage Posts</h1>
+        <p class="text-gray-600 mt-2">Manage your blog posts and track their performance</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <i class="fas fa-file-alt text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Posts</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ posts.count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <i class="fas fa-eye text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Views</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_views }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                    <i class="fas fa-heart text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Likes</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_likes }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                    <i class="fas fa-comments text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Comments</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_comments }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Posts Table -->
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-semibold text-gray-900">Your Posts</h2>
+                <a href="{% url 'blog_create' %}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-plus mr-2"></i>New Post
+                </a>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-200">
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-700">Title</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-700">Status</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-700">Category</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-700">Views</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-700">Likes</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-gray-700">Published</th>
+                        <th class="text-right py-3 px-6 text-sm font-medium text-gray-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in posts %}
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-4 px-6">
+                            <div>
+                                <p class="font-medium text-gray-900">{{ post.title }}</p>
+                                {% if post.excerpt %}
+                                <p class="text-sm text-gray-500 mt-1">{{ post.excerpt|truncatewords:10 }}</p>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium 
+                                      {% if post.status == 'published' %}bg-green-100 text-green-800
+                                      {% elif post.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                      {% elif post.status == 'draft' %}bg-gray-100 text-gray-800
+                                      {% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ post.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 text-sm text-gray-600">
+                            {{ post.category.name|default:"-" }}
+                        </td>
+                        <td class="py-4 px-6 text-sm text-gray-600">
+                            {{ post.views_count }}
+                        </td>
+                        <td class="py-4 px-6 text-sm text-gray-600">
+                            {{ post.likes.count }}
+                        </td>
+                        <td class="py-4 px-6 text-sm text-gray-600">
+                            {% if post.published_at %}
+                            {{ post.published_at|date:"M d, Y" }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6 text-right">
+                            <div class="flex justify-end space-x-2">
+                                <a href="{% url 'blog_detail' post.slug %}" 
+                                   class="text-blue-600 hover:text-blue-700 p-1" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'blog_edit' post.slug %}" 
+                                   class="text-green-600 hover:text-green-700 p-1" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="text-red-600 hover:text-red-700 p-1" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="py-12 text-center">
+                            <i class="fas fa-file-alt text-gray-300 text-4xl mb-3"></i>
+                            <p class="text-gray-500">You haven't created any posts yet.</p>
+                            <a href="{% url 'blog_create' %}" class="text-green-600 hover:text-green-700 text-sm mt-2 inline-block">
+                                Create your first post
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="bg-white px-6 py-4 border-t border-gray-200">
+            <div class="flex justify-between items-center">
+                <div class="text-sm text-gray-700">
+                    Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} posts
+                </div>
+                <div class="flex space-x-2">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" 
+                       class="bg-white border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-50">
+                        Previous
+                    </a>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <span class="bg-green-600 text-white px-3 py-1 rounded text-sm">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}" 
+                           class="bg-white border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-50">
+                            {{ num }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" 
+                       class="bg-white border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-50">
+                        Next
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

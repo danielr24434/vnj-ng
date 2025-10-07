@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Subscribe - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Complete Your Subscription</h1>
+
+        <!-- Selected Plan Summary -->
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="font-semibold text-gray-900">{{ form.plan.field.queryset.get.name|default:"Plan" }}</h3>
+                    <p class="text-gray-600 text-sm">{{ form.plan.field.queryset.get.description|default:"" }}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-2xl font-bold text-green-600">
+                        ₦{{ form.plan.field.queryset.get.price|default:"0" }}
+                    </p>
+                    <p class="text-gray-500 text-sm">per month</p>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Plan Selection -->
+            <div>
+                <label for="id_plan" class="block text-sm font-medium text-gray-700">Select Plan *</label>
+                <select name="plan" id="id_plan" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    <option value="">Choose a plan...</option>
+                    {% for plan in form.plan.field.queryset %}
+                    <option value="{{ plan.id }}" 
+                            {% if form.plan.value == plan.id %}selected{% endif %}
+                            data-price="{{ plan.price }}">
+                        {{ plan.get_name_display }} - ₦{{ plan.price }}/month
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Payment Summary -->
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h3 class="font-semibold text-green-900 mb-3">Payment Summary</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-green-700">Plan price:</span>
+                        <span class="font-medium" id="planPrice">₦0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-green-700">Tax (VAT):</span>
+                        <span class="font-medium" id="taxAmount">₦0</span>
+                    </div>
+                    <div class="flex justify-between border-t border-green-200 pt-2">
+                        <span class="text-green-900 font-semibold">Total amount:</span>
+                        <span class="font-bold text-green-900" id="totalAmount">₦0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">Payment Method</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="relative border rounded-lg p-4 cursor-pointer hover:border-green-500">
+                        <input type="radio" name="payment_method" value="card" class="sr-only" checked>
+                        <div class="flex items-center">
+                            <i class="fab fa-cc-visa text-blue-600 text-2xl mr-3"></i>
+                            <span class="font-medium">Credit/Debit Card</span>
+                        </div>
+                        <div class="absolute top-2 right-2 hidden">
+                            <i class="fas fa-check-circle text-green-500"></i>
+                        </div>
+                    </label>
+                    <label class="relative border rounded-lg p-4 cursor-pointer hover:border-green-500">
+                        <input type="radio" name="payment_method" value="bank" class="sr-only">
+                        <div class="flex items-center">
+                            <i class="fas fa-university text-green-600 text-2xl mr-3"></i>
+                            <span class="font-medium">Bank Transfer</span>
+                        </div>
+                        <div class="absolute top-2 right-2 hidden">
+                            <i class="fas fa-check-circle text-green-500"></i>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Terms Agreement -->
+            <div class="flex items-start">
+                <input type="checkbox" name="terms" id="terms" required 
+                       class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1">
+                <label for="terms" class="ml-2 block text-sm text-gray-700">
+                    I agree to the <a href="#" class="text-green-600 hover:text-green-500">Terms of Service</a> 
+                    and <a href="#" class="text-green-600 hover:text-green-500">Privacy Policy</a>. 
+                    I understand that subscriptions auto-renew and I can cancel anytime.
+                </label>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                Complete Subscription - <span id="submitAmount">₦0</span>
+            </button>
+        </form>
+
+        <!-- Security Notice -->
+        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div class="flex items-center">
+                <i class="fas fa-lock text-blue-600 mr-2"></i>
+                <p class="text-blue-800 text-sm">
+                    Your payment information is secure and encrypted. We use industry-standard security measures to protect your data.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const planSelect = document.getElementById('id_plan');
+const planPriceSpan = document.getElementById('planPrice');
+const taxAmountSpan = document.getElementById('taxAmount');
+const totalAmountSpan = document.getElementById('totalAmount');
+const submitAmountSpan = document.getElementById('submitAmount');
+
+function calculateAmounts() {
+    const selectedOption = planSelect.options[planSelect.selectedIndex];
+    const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+    const tax = price * 0.075; // 7.5% VAT
+    const total = price + tax;
+
+    planPriceSpan.textContent = '₦' + price.toFixed(2);
+    taxAmountSpan.textContent = '₦' + tax.toFixed(2);
+    totalAmountSpan.textContent = '₦' + total.toFixed(2);
+    submitAmountSpan.textContent = '₦' + total.toFixed(2);
+}
+
+// Payment method selection
+document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        document.querySelectorAll('label.border-green-500').forEach(label => {
+            label.classList.remove('border-green-500');
+            label.querySelector('.fa-check-circle').classList.add('hidden');
+        });
+        
+        if (this.checked) {
+            const label = this.closest('label');
+            label.classList.add('border-green-500');
+            label.querySelector('.fa-check-circle').classList.remove('hidden');
+        }
+    });
+});
+
+// Initialize first payment method as selected
+document.querySelector('input[name="payment_method"]').checked = true;
+document.querySelector('input[name="payment_method"]').dispatchEvent(new Event('change'));
+
+planSelect.addEventListener('change', calculateAmounts);
+// Initial calculation
+calculateAmounts();
+</script>
+{% endblock %}

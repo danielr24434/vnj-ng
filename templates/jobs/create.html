@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Post a Job - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Post a New Job</h1>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Basic Information -->
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <label for="title" class="block text-sm font-medium text-gray-700">Job Title *</label>
+                    <input type="text" name="title" id="title" required 
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                           placeholder="e.g., Senior Web Developer">
+                </div>
+
+                <div>
+                    <label for="company_name" class="block text-sm font-medium text-gray-700">Company Name *</label>
+                    <input type="text" name="company_name" id="company_name" required 
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                </div>
+
+                <div>
+                    <label for="company_logo" class="block text-sm font-medium text-gray-700">Company Logo</label>
+                    <input type="file" name="company_logo" id="company_logo" accept="image/*"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    <p class="text-sm text-gray-500 mt-1">Upload your company logo (optional)</p>
+                </div>
+            </div>
+
+            <!-- Job Details -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="category" class="block text-sm font-medium text-gray-700">Category *</label>
+                        {{ form.category }}
+                </div>
+
+                <div>
+                    <label for="job_type" class="block text-sm font-medium text-gray-700">Job Type *</label>
+                    <select name="job_type" id="job_type" required 
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        <option value="">Select Type</option>
+                        <option value="full_time">Full Time</option>
+                        <option value="part_time">Part Time</option>
+                        <option value="contract">Contract</option>
+                        <option value="freelance">Freelance</option>
+                        <option value="internship">Internship</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Location & Level -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="location" class="block text-sm font-medium text-gray-700">Location *</label>
+                    <input type="text" name="location" id="location" required 
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                           placeholder="e.g., Lagos, Nigeria">
+                </div>
+
+                <div>
+                    <label for="level_requirement" class="block text-sm font-medium text-gray-700">Experience Level *</label>
+                    <select name="level_requirement" id="level_requirement" required 
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        <option value="entry">Entry Level</option>
+                        <option value="mid">Mid Level</option>
+                        <option value="senior">Senior Level</option>
+                        <option value="executive">Executive</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Salary Range -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="salary_min" class="block text-sm font-medium text-gray-700">Minimum Salary (₦) *</label>
+                    <input type="number" name="salary_min" id="salary_min" required min="0" step="1000"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                </div>
+
+                <div>
+                    <label for="salary_max" class="block text-sm font-medium text-gray-700">Maximum Salary (₦) *</label>
+                    <input type="number" name="salary_max" id="salary_max" required min="0" step="1000"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                </div>
+            </div>
+
+            <!-- Job Description -->
+            <div>
+                <label for="description" class="block text-sm font-medium text-gray-700">Job Description *</label>
+                <textarea name="description" id="description" rows="6" required 
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                          placeholder="Describe the job responsibilities, requirements, and benefits..."></textarea>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="spots_total" class="block text-sm font-medium text-gray-700">Total Spots Available *</label>
+                    <input type="number" name="spots_total" id="spots_total" required min="1"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                </div>
+
+                <div>
+                    <label for="deadline" class="block text-sm font-medium text-gray-700">Application Deadline *</label>
+                    <input type="datetime-local" name="deadline" id="deadline" required 
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                </div>
+            </div>
+
+            <!-- Price -->
+            <div>
+                <label for="price" class="block text-sm font-medium text-gray-700">Posting Fee (₦)</label>
+                <input type="number" name="price" id="price" min="0" step="0.01" value="0"
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                <p class="text-sm text-gray-500 mt-1">Set to 0 for free job posting</p>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="flex justify-end space-x-3 pt-6">
+                <a href="{% url 'jobs_list' %}" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                    Post Job
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

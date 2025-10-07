@@ -1,0 +1,534 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}KYC Verification - Vinaji NG{% endblock %}
+
+{% block extra_css %}
+<style>
+.kyc-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.form-step {
+    display: none;
+}
+.form-step.active {
+    display: block;
+    animation: fadeIn 0.5s ease-in;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.progress-bar {
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    transition: width 0.5s ease;
+}
+.upload-area {
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: #f9fafb;
+}
+.upload-area:hover {
+    border-color: #10b981;
+    background: #f0fdf4;
+}
+.upload-area.dragover {
+    border-color: #10b981;
+    background: #f0fdf4;
+    transform: scale(1.02);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">KYC Verification</h1>
+            <p class="text-lg text-gray-600">Complete your identity verification to unlock all features</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full">
+                        <i class="fas fa-shield-alt text-green-600"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900">Identity Verification</h2>
+                        <p class="text-gray-600">Step-by-step verification process</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-500 mb-1">Progress</div>
+                    <div class="text-2xl font-bold text-green-600">25%</div>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 25%"></div>
+            </div>
+        </div>
+
+        <!-- Status Alert -->
+        {% if kyc %}
+        <div class="mb-6 p-6 rounded-2xl 
+            {% if kyc.status == 'approved' %}bg-green-50 border border-green-200
+            {% elif kyc.status == 'rejected' %}bg-red-50 border border-red-200
+            {% elif kyc.status == 'pending' %}bg-yellow-50 border border-yellow-200
+            {% else %}bg-blue-50 border border-blue-200{% endif %}">
+            <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <i class="fas 
+                        {% if kyc.status == 'approved' %}fa-check-circle text-green-600 text-2xl
+                        {% elif kyc.status == 'rejected' %}fa-times-circle text-red-600 text-2xl
+                        {% elif kyc.status == 'pending' %}fa-clock text-yellow-600 text-2xl
+                        {% else %}fa-exclamation-circle text-blue-600 text-2xl{% endif %}">
+                    </i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-lg font-semibold 
+                        {% if kyc.status == 'approved' %}text-green-800
+                        {% elif kyc.status == 'rejected' %}text-red-800
+                        {% elif kyc.status == 'pending' %}text-yellow-800
+                        {% else %}text-blue-800{% endif %}">
+                        KYC Status: {{ kyc.get_status_display }}
+                    </h3>
+                    {% if kyc.status == 'rejected' and kyc.rejection_reason %}
+                        <p class="text-red-700 mt-2 bg-red-100 p-3 rounded-lg">{{ kyc.rejection_reason }}</p>
+                    {% endif %}
+                    <div class="flex flex-wrap gap-4 mt-3 text-sm text-gray-600">
+                        <span><i class="fas fa-calendar mr-1"></i>Submitted: {{ kyc.submitted_at|date:"M d, Y" }}</span>
+                        {% if kyc.reviewed_at %}
+                            <span><i class="fas fa-check-circle mr-1"></i>Reviewed: {{ kyc.reviewed_at|date:"M d, Y" }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- KYC Form -->
+        {% if not kyc or kyc.status == 'rejected' or kyc.status == 'needs_revision' %}
+        <form method="post" enctype="multipart/form-data" class="space-y-6" id="kycForm">
+            {% csrf_token %}
+            
+            <!-- Personal Information Step -->
+            <div class="form-step active" id="step1">
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="flex items-center justify-center w-8 h-8 bg-green-100 text-green-600 rounded-full font-semibold">
+                            1
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900">Personal Information</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Legal First Name *
+                            </label>
+                            {{ form.legal_first_name }}
+                            {% if form.legal_first_name.errors %}
+                                <div class="mt-1 text-red-600 text-sm">{{ form.legal_first_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Legal Last Name *
+                            </label>
+                            {{ form.legal_last_name }}
+                            {% if form.legal_last_name.errors %}
+                                <div class="mt-1 text-red-600 text-sm">{{ form.legal_last_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Date of Birth *
+                        </label>
+                        {{ form.date_of_birth }}
+                        {% if form.date_of_birth.errors %}
+                            <div class="mt-1 text-red-600 text-sm">{{ form.date_of_birth.errors.0 }}</div>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">You must be at least 18 years old</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="button" onclick="showStep(2)" class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center space-x-2">
+                        <span>Continue</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Address Information Step -->
+            <div class="form-step" id="step2">
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="flex items-center justify-center w-8 h-8 bg-green-100 text-green-600 rounded-full font-semibold">
+                            2
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900">Address Information</h3>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Complete Address *
+                            </label>
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                                <div class="mt-1 text-red-600 text-sm">{{ form.address.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    City *
+                                </label>
+                                {{ form.city }}
+                                {% if form.city.errors %}
+                                    <div class="mt-1 text-red-600 text-sm">{{ form.city.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    State *
+                                </label>
+                                {{ form.state }}
+                                {% if form.state.errors %}
+                                    <div class="mt-1 text-red-600 text-sm">{{ form.state.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Country *
+                                </label>
+                                {{ form.country }}
+                                {% if form.country.errors %}
+                                    <div class="mt-1 text-red-600 text-sm">{{ form.country.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="md:w-1/2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Postal Code
+                            </label>
+                            {{ form.postal_code }}
+                            {% if form.postal_code.errors %}
+                                <div class="mt-1 text-red-600 text-sm">{{ form.postal_code.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between">
+                    <button type="button" onclick="showStep(1)" class="bg-gray-600 text-white px-8 py-3 rounded-lg hover:bg-gray-700 transition-colors font-semibold flex items-center space-x-2">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back</span>
+                    </button>
+                    <button type="button" onclick="showStep(3)" class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center space-x-2">
+                        <span>Continue</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Identity Verification Step -->
+            <div class="form-step" id="step3">
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="flex items-center justify-center w-8 h-8 bg-green-100 text-green-600 rounded-full font-semibold">
+                            3
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900">Identity Verification</h3>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    ID Type *
+                                </label>
+                                {{ form.id_type }}
+                                {% if form.id_type.errors %}
+                                    <div class="mt-1 text-red-600 text-sm">{{ form.id_type.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    ID Number *
+                                </label>
+                                {{ form.id_number }}
+                                {% if form.id_number.errors %}
+                                    <div class="mt-1 text-red-600 text-sm">{{ form.id_number.errors.0 }}</div>
+                                {% endif %}
+                                <p class="mt-1 text-sm text-gray-500" id="idNumberHelp">
+                                    Enter your ID number exactly as it appears
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between">
+                    <button type="button" onclick="showStep(2)" class="bg-gray-600 text-white px-8 py-3 rounded-lg hover:bg-gray-700 transition-colors font-semibold flex items-center space-x-2">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back</span>
+                    </button>
+                    <button type="button" onclick="showStep(4)" class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center space-x-2">
+                        <span>Continue</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Document Upload Step -->
+            <div class="form-step" id="step4">
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="flex items-center justify-center w-8 h-8 bg-green-100 text-green-600 rounded-full font-semibold">
+                            4
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900">Document Upload</h3>
+                    </div>
+
+                    <div class="space-y-8">
+                        <!-- ID Document Front -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-4">
+                                ID Document Front *
+                            </label>
+                            <div class="upload-area" id="frontUploadArea">
+                                <div class="text-center">
+                                    <i class="fas fa-id-card text-4xl text-gray-400 mb-3"></i>
+                                    <p class="text-lg font-medium text-gray-900 mb-2">Upload Front of ID</p>
+                                    <p class="text-gray-500 mb-4">Clear photo of the front of your ID document</p>
+                                    {{ form.id_document_front }}
+                                    <p class="text-sm text-gray-400 mt-2">JPG, PNG, or PDF • Max 5MB</p>
+                                </div>
+                            </div>
+                            {% if form.id_document_front.errors %}
+                                <div class="mt-2 text-red-600 text-sm">{{ form.id_document_front.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- ID Document Back -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-4">
+                                ID Document Back
+                            </label>
+                            <div class="upload-area" id="backUploadArea">
+                                <div class="text-center">
+                                    <i class="fas fa-id-card-alt text-4xl text-gray-400 mb-3"></i>
+                                    <p class="text-lg font-medium text-gray-900 mb-2">Upload Back of ID</p>
+                                    <p class="text-gray-500 mb-4">Required for some ID types (optional for others)</p>
+                                    {{ form.id_document_back }}
+                                    <p class="text-sm text-gray-400 mt-2">JPG, PNG, or PDF • Max 5MB</p>
+                                </div>
+                            </div>
+                            {% if form.id_document_back.errors %}
+                                <div class="mt-2 text-red-600 text-sm">{{ form.id_document_back.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Selfie with ID -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-4">
+                                Selfie with ID Document
+                            </label>
+                            <div class="upload-area" id="selfieUploadArea">
+                                <div class="text-center">
+                                    <i class="fas fa-camera text-4xl text-gray-400 mb-3"></i>
+                                    <p class="text-lg font-medium text-gray-900 mb-2">Take a Selfie with Your ID</p>
+                                    <p class="text-gray-500 mb-4">Hold your ID next to your face for verification</p>
+                                    {{ form.selfie_with_id }}
+                                    <p class="text-sm text-gray-400 mt-2">JPG or PNG • Max 5MB</p>
+                                </div>
+                            </div>
+                            {% if form.selfie_with_id.errors %}
+                                <div class="mt-2 text-red-600 text-sm">{{ form.selfie_with_id.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Final Review and Submit -->
+                <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-6">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <i class="fas fa-info-circle text-blue-600 text-xl"></i>
+                        <h3 class="text-lg font-semibold text-blue-900">Before You Submit</h3>
+                    </div>
+                    <ul class="text-blue-800 space-y-2">
+                        <li class="flex items-center space-x-2">
+                            <i class="fas fa-check text-green-500"></i>
+                            <span>All information matches your ID documents</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i class="fas fa-check text-green-500"></i>
+                            <span>Documents are clear and readable</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i class="fas fa-check text-green-500"></i>
+                            <span>You are at least 18 years old</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i class="fas fa-check text-green-500"></i>
+                            <span>All required fields are completed</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="flex justify-between">
+                    <button type="button" onclick="showStep(3)" class="bg-gray-600 text-white px-8 py-3 rounded-lg hover:bg-gray-700 transition-colors font-semibold flex items-center space-x-2">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back</span>
+                    </button>
+                    <button type="submit" class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center space-x-2">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>Submit KYC Verification</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+        {% endif %}
+
+        {% if kyc.status == 'approved' %}
+        <div class="text-center py-8">
+            <div class="bg-green-50 border border-green-200 rounded-2xl p-8 inline-block">
+                <i class="fas fa-check-circle text-green-500 text-5xl mb-4"></i>
+                <h3 class="text-2xl font-bold text-green-900 mb-2">KYC Verified!</h3>
+                <p class="text-green-700 mb-4">Your identity has been successfully verified</p>
+                <a href="{% url 'virtual_account' %}" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                    View Your Virtual Accounts
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentStep = 1;
+const totalSteps = 4;
+
+function showStep(step) {
+    // Hide all steps
+    document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+    
+    // Show current step
+    document.getElementById(`step${step}`).classList.add('active');
+    
+    // Update progress bar
+    const progress = (step / totalSteps) * 100;
+    document.querySelector('.progress-fill').style.width = `${progress}%`;
+    document.querySelector('.text-2xl.font-bold.text-green-600').textContent = `${Math.round(progress)}%`;
+    
+    currentStep = step;
+}
+
+// File upload area interactions
+function setupUploadArea(uploadAreaId, fileInputId) {
+    const uploadArea = document.getElementById(uploadAreaId);
+    const fileInput = document.getElementById(fileInputId);
+
+    let openingDialog = false; // ✅ Prevent double-open
+
+    uploadArea.addEventListener('click', (e) => {
+        if (openingDialog) return; // ✅ skip if already opening
+        openingDialog = true;
+        fileInput.click();
+        setTimeout(() => openingDialog = false, 500); // reset after delay
+    });
+
+    // Prevent event bubbling so browser doesn’t re-trigger open
+    fileInput.addEventListener('click', (e) => e.stopPropagation());
+
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        fileInput.files = e.dataTransfer.files;
+        updateUploadArea(uploadArea, fileInput.files[0]);
+    });
+    
+    fileInput.addEventListener('change', () => {
+        updateUploadArea(uploadArea, fileInput.files[0]);
+    });
+}
+
+
+function updateUploadArea(uploadArea, file) {
+    if (file) {
+        const fileInfo = document.createElement('div');
+        fileInfo.classList.add('text-center');
+        fileInfo.innerHTML = `
+            <i class="fas fa-check-circle text-green-500 text-3xl mb-2"></i>
+            <p class="font-medium text-gray-900">${file.name}</p>
+            <p class="text-sm text-gray-500">${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+            <p class="text-xs text-gray-400 mt-2">Click to change file</p>
+        `;
+        
+        // Remove previous info div if any, but keep the input
+        const input = uploadArea.querySelector('input[type="file"]');
+        uploadArea.innerHTML = '';
+        uploadArea.appendChild(input);
+        uploadArea.appendChild(fileInfo);
+    }
+}
+
+
+// Initialize upload areas
+setupUploadArea('frontUploadArea', 'id_id_document_front');
+setupUploadArea('backUploadArea', 'id_id_document_back');
+setupUploadArea('selfieUploadArea', 'id_selfie_with_id');
+
+// ID type change handler
+document.getElementById('id_id_type').addEventListener('change', function() {
+    const helpText = document.getElementById('idNumberHelp');
+    const type = this.value;
+    
+    if (type === 'bvn') {
+        helpText.textContent = 'BVN must be exactly 11 digits';
+    } else if (type === 'nin') {
+        helpText.textContent = 'NIN must be exactly 11 digits';
+    } else {
+        helpText.textContent = 'Enter your ID number exactly as it appears';
+    }
+});
+
+// Form submission handling
+document.getElementById('kycForm').addEventListener('submit', function(e) {
+    // You can add final validation here
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Submitting...</span>';
+    submitBtn.disabled = true;
+});
+</script>
+{% endblock %}

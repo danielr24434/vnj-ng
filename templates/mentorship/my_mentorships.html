@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}My Mentorships - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">My Mentorships</h1>
+            <p class="text-gray-600">Manage your mentorship enrollments and chat with mentors</p>
+        </div>
+        <a href="{% url 'available_mentors' %}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+            <i class="fas fa-plus mr-2"></i>Find More Mentors
+        </a>
+    </div>
+
+    <!-- Mentorships List -->
+    <div class="space-y-4">
+        {% for enrollment in enrollments %}
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-start justify-between">
+                <!-- Mentor Info -->
+                <div class="flex items-center space-x-4">
+                    {% if enrollment.mentor.mentor_picture %}
+                    <img src="{{ enrollment.mentor.mentor_picture.url }}" alt="{{ enrollment.mentor.name }}" class="w-16 h-16 rounded-full object-cover">
+                    {% else %}
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span class="font-bold text-blue-600 text-xl">{{ enrollment.mentor.name|first|upper }}</span>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">{{ enrollment.mentor.name }}</h3>
+                        <p class="text-sm text-gray-500">@{{ enrollment.mentor.username }}</p>
+                        <p class="text-sm text-gray-600">{{ enrollment.mentor.expertise_area }}</p>
+                    </div>
+                </div>
+
+                <!-- Status Badge -->
+                <div class="flex flex-col items-end space-y-2">
+                    {% if enrollment.status == 'active' %}
+                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                        <i class="fas fa-check-circle mr-1"></i>Active
+                    </span>
+                    {% elif enrollment.status == 'pending' %}
+                    <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                        <i class="fas fa-clock mr-1"></i>Pending
+                    </span>
+                    {% elif enrollment.status == 'completed' %}
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                        <i class="fas fa-graduation-cap mr-1"></i>Completed
+                    </span>
+                    {% elif enrollment.status == 'cancelled' %}
+                    <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
+                        <i class="fas fa-times-circle mr-1"></i>Cancelled
+                    </span>
+                    {% endif %}
+                    
+                    <p class="text-xs text-gray-500">Enrolled: {{ enrollment.enrolled_at|date:"M d, Y" }}</p>
+                </div>
+            </div>
+
+            <!-- Enrollment Details -->
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div class="bg-gray-50 rounded-lg p-3">
+                    <span class="text-gray-600">Duration:</span>
+                    <span class="font-medium text-gray-900 block">{{ enrollment.mentor.duration }} hours</span>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3">
+                    <span class="text-gray-600">Amount Paid:</span>
+                    <span class="font-medium text-green-600 block">₦{{ enrollment.purchase_price }}</span>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3">
+                    <span class="text-gray-600">Tracking ID:</span>
+                    <span class="font-mono text-xs text-gray-900 block">{{ enrollment.tracking_id }}</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-4 flex space-x-3">
+                {% if enrollment.status == 'active' %}
+                <a href="{% url 'mentorship_chat' enrollment.tracking_id %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-comments mr-2"></i>Start Chat
+                </a>
+                {% elif enrollment.status == 'pending' %}
+                <button class="bg-gray-400 text-white px-4 py-2 rounded-lg cursor-not-allowed" disabled>
+                    <i class="fas fa-clock mr-2"></i>Waiting for Activation
+                </button>
+                {% elif enrollment.status == 'completed' %}
+                <a href="{% url 'mentorship_chat' enrollment.tracking_id %}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-history mr-2"></i>View Chat History
+                </a>
+                {% endif %}
+                
+                <!-- Contact Info -->
+                {% if enrollment.mentor.email or enrollment.mentor.phone %}
+                <div class="text-xs text-gray-500 flex items-center space-x-4">
+                    {% if enrollment.mentor.email %}
+                    <span><i class="fas fa-envelope mr-1"></i>{{ enrollment.mentor.email }}</span>
+                    {% endif %}
+                    {% if enrollment.mentor.phone %}
+                    <span><i class="fas fa-phone mr-1"></i>{{ enrollment.mentor.phone }}</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="bg-white rounded-lg shadow-lg p-12 text-center">
+            <i class="fas fa-user-graduate text-gray-300 text-6xl mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">No mentorships yet</h3>
+            <p class="text-gray-600 mb-4">Start your learning journey by enrolling with a mentor.</p>
+            <a href="{% url 'available_mentors' %}" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                <i class="fas fa-search mr-2"></i>Browse Available Mentors
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

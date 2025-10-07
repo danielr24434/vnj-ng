@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Moderation Panel - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900">Moderation Panel</h1>
+        <p class="text-gray-600 mt-2">Review and approve pending content submissions</p>
+    </div>
+
+    <!-- Pending Jobs -->
+    {% if pending_jobs %}
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Pending Jobs ({{ pending_jobs|length }})</h2>
+        <div class="space-y-4">
+            {% for job in pending_jobs %}
+            <div class="border rounded-lg p-4">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900">{{ job.title }}</h3>
+                        <p class="text-sm text-gray-600 mt-1">{{ job.company_name }} • {{ job.location }}</p>
+                        <p class="text-green-600 font-semibold mt-1">₦{{ job.salary_min }} - ₦{{ job.salary_max }}</p>
+                        <p class="text-gray-700 text-sm mt-2">{{ job.description|truncatewords:30 }}</p>
+                        <div class="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                            <span>Posted by: {{ job.posted_by.username }}</span>
+                            <span>{{ job.created_at|timesince }} ago</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2 ml-4">
+                       
+                        
+                            <div class="flex space-x-2 ml-4">
+                                <form method="post" action="{% url 'approve_job' job.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                                        Approve
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'reject_job' job.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">
+                                        Reject
+                                    </button>
+                                </form>
+                        <a href="{% url 'admin:jobs_job_change' job.id %}" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                            Edit
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Pending Courses -->
+    {% if pending_courses %}
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Pending Courses ({{ pending_courses|length }})</h2>
+        <div class="space-y-4">
+            {% for course in pending_courses %}
+            <div class="border rounded-lg p-4">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900">{{ course.title }}</h3>
+                        <p class="text-sm text-gray-600 mt-1">{{ course.instructor.username }} • {{ course.get_level_display }}</p>
+                        <p class="text-green-600 font-semibold mt-1">₦{{ course.price }}</p>
+                        <p class="text-gray-700 text-sm mt-2">{{ course.description|truncatewords:30 }}</p>
+                        <div class="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                            <span>Duration: {{ course.duration }} hours</span>
+                            <span>Mode: {{ course.get_mode_display }}</span>
+                            <span>{{ course.created_at|timesince }} ago</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2 ml-4">
+                        <form method="post" action="{% url 'approve_course' course.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                                Approve
+                            </button>
+                        </form>
+                        <form method="post" action="{% url 'reject_course' course.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">
+                                Reject
+                            </button>
+                        </form>
+                        <a href="{% url 'admin:courses_course_change' course.id %}" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                            Edit
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Pending Products -->
+    {% if pending_products %}
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Pending Products ({{ pending_products|length }})</h2>
+        <div class="space-y-4">
+            {% for product in pending_products %}
+            <div class="border rounded-lg p-4">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900">{{ product.title }}</h3>
+                        <p class="text-sm text-gray-600 mt-1">{{ product.seller.username }} • {{ product.get_license_type_display }}</p>
+                        <p class="text-green-600 font-semibold mt-1">₦{{ product.price }}</p>
+                        <p class="text-gray-700 text-sm mt-2">{{ product.description|truncatewords:30 }}</p>
+                        <div class="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                            <span>Version: {{ product.version }}</span>
+                            <span>Category: {{ product.category.name }}</span>
+                            <span>{{ product.created_at|timesince }} ago</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2 ml-4">
+                        <form method="post" action="{% url 'approve_product' product.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                                Approve
+                            </button>
+                        </form>
+                        
+                        <form method="post" action="{% url 'reject_product' product.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">
+                                Reject
+                            </button>
+                        </form>
+                        
+                        <a href="{% url 'admin:products_product_change' product.id %}" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                            Edit
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Pending Blog Posts -->
+    {% if pending_blog_posts %}
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Pending Blog Posts ({{ pending_blog_posts|length }})</h2>
+        <div class="space-y-4">
+            {% for post in pending_blog_posts %}
+            <div class="border rounded-lg p-4">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900">{{ post.title }}</h3>
+                        <p class="text-sm text-gray-600 mt-1">{{ post.author.username }}</p>
+                        {% if post.category %}
+                        <p class="text-sm text-gray-600">Category: {{ post.category.name }}</p>
+                        {% endif %}
+                        <p class="text-gray-700 text-sm mt-2">{{ post.excerpt|default:post.content|truncatewords:30 }}</p>
+                        <div class="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                            <span>{{ post.created_at|timesince }} ago</span>
+                            <span>{{ post.read_time }} min read</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2 ml-4">
+                        <form method="post" action="{% url 'admin:blog_blogpost_change' post.id %}" class="inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="status" value="published">
+                            <button type="submit" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                                Approve
+                            </button>
+                        </form>
+                        <form method="post" action="{% url 'admin:blog_blogpost_change' post.id %}" class="inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="status" value="rejected">
+                            <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">
+                                Reject
+                            </button>
+                        </form>
+                        <a href="{% url 'admin:blog_blogpost_change' post.id %}" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                            Edit
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- No Pending Content -->
+    {% if not pending_jobs and not pending_courses and not pending_products and not pending_blog_posts %}
+    <div class="bg-white rounded-lg shadow-lg p-12 text-center">
+        <i class="fas fa-check-circle text-green-300 text-6xl mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">All caught up!</h3>
+        <p class="text-gray-600">There are no pending items to moderate at this time.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

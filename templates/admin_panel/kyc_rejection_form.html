@@ -1,0 +1,34 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Reject KYC Verification</h1>
+    
+    <div class="module">
+        <h2>User: {{ kyc.user.username }}</h2>
+        <p><strong>Name:</strong> {{ kyc.legal_first_name }} {{ kyc.legal_last_name }}</p>
+        <p><strong>ID Type:</strong> {{ kyc.get_id_type_display }}</p>
+        <p><strong>ID Number:</strong> {{ kyc.id_number }}</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-row">
+            <div>
+                <label for="rejection_reason">Rejection Reason:</label>
+                <textarea name="rejection_reason" id="rejection_reason" rows="5" cols="80" 
+                          placeholder="Please provide a clear reason for rejection..." 
+                          style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"
+                          required></textarea>
+                <p class="help">This reason will be shown to the user.</p>
+            </div>
+        </div>
+        
+        <div class="submit-row">
+            <input type="submit" value="Reject KYC" class="default" style="background: #ef4444;">
+            <a href="{% url 'admin:accounts_kycverification_changelist' %}" class="button">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

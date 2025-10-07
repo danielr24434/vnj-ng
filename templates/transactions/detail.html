@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Transaction Details - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <!-- Transaction Header -->
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Transaction Details</h1>
+                <p class="text-gray-600 mt-1">Reference: {{ transaction.reference }}</p>
+            </div>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                         {% if transaction.status == 'completed' %}bg-green-100 text-green-800
+                         {% elif transaction.status == 'pending' %}bg-yellow-100 text-yellow-800
+                         {% elif transaction.status == 'rejected' %}bg-red-100 text-red-800
+                         {% else %}bg-gray-100 text-gray-800{% endif %}">
+                {{ transaction.get_status_display }}
+            </span>
+        </div>
+
+        <!-- Transaction Summary -->
+        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+            <div class="text-center">
+                <p class="text-sm text-gray-600">Transaction Amount</p>
+                <p class="text-4xl font-bold {% if transaction.is_credit %}text-green-600{% else %}text-red-600{% endif %} mt-2">
+                    {% if transaction.is_credit %}+{% else %}-{% endif %}₦{{ transaction.amount }}
+                </p>
+                <p class="text-gray-500 text-sm mt-1">{{ transaction.get_transaction_type_display }}</p>
+            </div>
+        </div>
+
+        <!-- Transaction Details -->
+        <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Date & Time</label>
+                    <p class="mt-1 text-sm text-gray-900">
+                        {{ transaction.created_at|date:"F d, Y" }} at {{ transaction.created_at|time:"H:i" }}
+                    </p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Transaction Type</label>
+                    <p class="mt-1 text-sm text-gray-900">{{ transaction.get_transaction_type_display }}</p>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Description</label>
+                <p class="mt-1 text-sm text-gray-900">{{ transaction.description }}</p>
+            </div>
+
+            {% if transaction.payment_method %}
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Payment Method</label>
+                <p class="mt-1 text-sm text-gray-900">{{ transaction.payment_method.get_name_display }}</p>
+            </div>
+            {% endif %}
+
+            {% if transaction.metadata %}
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Additional Information</label>
+                <div class="mt-1 bg-gray-50 rounded-lg p-3">
+                    <pre class="text-sm text-gray-900 whitespace-pre-wrap">{{ transaction.metadata|pprint }}</pre>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if transaction.rejection_reason %}
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                <label class="block text-sm font-medium text-red-800">Rejection Reason</label>
+                <p class="mt-1 text-sm text-red-700">{{ transaction.rejection_reason }}</p>
+            </div>
+            {% endif %}
+
+            {% if transaction.completed_at %}
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Completed At</label>
+                <p class="mt-1 text-sm text-gray-900">
+                    {{ transaction.completed_at|date:"F d, Y" }} at {{ transaction.completed_at|time:"H:i" }}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
+            <a href="{% url 'transactions_list' %}" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors">
+                Back to Transactions
+            </a>
+            {% if transaction.status == 'pending' %}
+            <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                Contact Support
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Related Transactions -->
+    {% if related_transactions %}
+    <div class="bg-white rounded-lg shadow-lg p-6 mt-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Related Transactions</h2>
+        <div class="space-y-3">
+            {% for related in related_transactions %}
+            <div class="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                    <p class="font-medium text-gray-900">{{ related.description|truncatewords:6 }}</p>
+                    <p class="text-sm text-gray-500">{{ related.created_at|date:"M d, Y" }}</p>
+                </div>
+                <div class="text-right">
+                    <span class="font-semibold {% if related.is_credit %}text-green-600{% else %}text-red-600{% endif %}">
+                        {% if related.is_credit %}+{% else %}-{% endif %}₦{{ related.amount }}
+                    </span>
+                    <p class="text-sm text-gray-500">{{ related.get_status_display }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

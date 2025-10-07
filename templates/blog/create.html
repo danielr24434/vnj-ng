@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block title %}Write New Post - Vinaji Blog{% endblock %}
+
+{% block extra_css %}
+<style>
+    .editor-toolbar {
+        @apply border border-gray-300 rounded-t-lg bg-gray-50 p-2 space-x-2;
+    }
+    .editor-toolbar button {
+        @apply px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-100;
+    }
+    .editor-content {
+        @apply border border-gray-300 border-t-0 rounded-b-lg p-4 min-h-64 focus:outline-none focus:ring-2 focus:ring-green-500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Write New Post</h1>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Title -->
+            <div>
+                <label for="title" class="block text-sm font-medium text-gray-700">Post Title *</label>
+                <input type="text" name="title" id="title" required 
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                       placeholder="Enter a compelling title...">
+            </div>
+
+            <!-- Excerpt -->
+            <div>
+                <label for="excerpt" class="block text-sm font-medium text-gray-700">Excerpt</label>
+                <textarea name="excerpt" id="excerpt" rows="3"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                          placeholder="Brief description of your post (optional)..."></textarea>
+            </div>
+
+            <!-- Content -->
+            <div>
+                <label for="content" class="block text-sm font-medium text-gray-700">Content *</label>
+                <div class="mt-1">
+                    <!-- Simple Editor Toolbar -->
+                    <div class="editor-toolbar">
+                        <button type="button" onclick="formatText('bold')"><strong>B</strong></button>
+                        <button type="button" onclick="formatText('italic')"><em>I</em></button>
+                        <button type="button" onclick="formatText('underline')"><u>U</u></button>
+                        <button type="button" onclick="insertText('## ', '')">H2</button>
+                        <button type="button" onclick="insertText('### ', '')">H3</button>
+                        <button type="button" onclick="insertText('- ', '')">List</button>
+                        <button type="button" onclick="insertText('> ', '')">Quote</button>
+                        <button type="button" onclick="insertText('`', '`')">Code</button>
+                    </div>
+                    <textarea name="content" id="content" rows="15" required
+                              class="editor-content"
+                              placeholder="Write your post content here..."></textarea>
+                </div>
+            </div>
+
+            <!-- Category & Tags -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+                    <select name="category" id="category"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        <option value="">Select Category</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="tags" class="block text-sm font-medium text-gray-700">Tags</label>
+                    <input type="text" name="tags" id="tags"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                           placeholder="tag1, tag2, tag3">
+                    <p class="text-xs text-gray-500 mt-1">Separate tags with commas</p>
+                </div>
+            </div>
+
+            <!-- Featured Image -->
+            <div>
+                <label for="featured_image" class="block text-sm font-medium text-gray-700">Featured Image</label>
+                <input type="file" name="featured_image" id="featured_image" accept="image/*"
+                       class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
+                <p class="text-xs text-gray-500 mt-1">Recommended size: 1200x630 pixels</p>
+            </div>
+
+            <!-- Status -->
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                <select name="status" id="status"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    <option value="draft">Draft</option>
+                    <option value="pending">Submit for Review</option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">
+                    Choose "Submit for Review" to publish your post after admin approval
+                </p>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="flex justify-end space-x-3 pt-6">
+                <a href="{% url 'blog_list' %}" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" name="action" value="draft" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                    Save as Draft
+                </button>
+                <button type="submit" name="action" value="publish" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                    Submit for Review
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Writing Tips -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mt-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Writing Tips</h3>
+        <ul class="space-y-2 text-sm text-gray-600">
+            <li class="flex items-start">
+                <i class="fas fa-lightbulb text-yellow-500 mr-2 mt-1"></i>
+                <span>Write a compelling title that grabs attention</span>
+            </li>
+            <li class="flex items-start">
+                <i class="fas fa-lightbulb text-yellow-500 mr-2 mt-1"></i>
+                <span>Use headings to break up your content</span>
+            </li>
+            <li class="flex items-start">
+                <i class="fas fa-lightbulb text-yellow-500 mr-2 mt-1"></i>
+                <span>Include relevant tags to improve discoverability</span>
+            </li>
+            <li class="flex items-start">
+                <i class="fas fa-lightbulb text-yellow-500 mr-2 mt-1"></i>
+                <span>Add a featured image to make your post stand out</span>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<script>
+function formatText(command) {
+    const textarea = document.getElementById('content');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+    
+    let formattedText = '';
+    switch(command) {
+        case 'bold':
+            formattedText = `**${selectedText}**`;
+            break;
+        case 'italic':
+            formattedText = `_${selectedText}_`;
+            break;
+        case 'underline':
+            formattedText = `<u>${selectedText}</u>`;
+            break;
+    }
+    
+    textarea.value = textarea.value.substring(0, start) + formattedText + textarea.value.substring(end);
+    textarea.focus();
+    textarea.setSelectionRange(start + formattedText.length, start + formattedText.length);
+}
+
+function insertText(before, after) {
+    const textarea = document.getElementById('content');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+    
+    textarea.value = textarea.value.substring(0, start) + before + selectedText + after + textarea.value.substring(end);
+    textarea.focus();
+    textarea.setSelectionRange(start + before.length, start + before.length + selectedText.length);
+}
+
+// Auto-save draft
+let autoSaveTimeout;
+document.getElementById('content').addEventListener('input', function() {
+    clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
+        // In a real app, you'd make an API call to save the draft
+        console.log('Auto-saving draft...');
+    }, 2000);
+});
+</script>
+{% endblock %}

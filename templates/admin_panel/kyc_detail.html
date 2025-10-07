@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}Review KYC: {{ kyc.user.username }} - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Review KYC Submission</h1>
+                <p class="text-gray-600 mt-2">For user: <strong class="text-green-600">{{ kyc.user.username }}</strong></p>
+            </div>
+            <a href="{% url 'kyc_management' %}" class="text-gray-600 hover:text-gray-900 font-medium flex items-center space-x-2">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to List</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-3">Personal & ID Information</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div><strong>Full Name:</strong><p>{{ kyc.legal_first_name }} {{ kyc.legal_last_name }}</p></div>
+                    <div><strong>Date of Birth:</strong><p>{{ kyc.date_of_birth|date:"M d, Y" }}</p></div>
+                    <div><strong>ID Type:</strong><p>{{ kyc.get_id_type_display }}</p></div>
+                    <div><strong>ID Number:</strong><p>{{ kyc.id_number }}</p></div>
+                    <div class="col-span-2"><strong>Address:</strong><p>{{ kyc.address }}, {{ kyc.city }}, {{ kyc.state }}, {{ kyc.country }}.</p></div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-3">Submitted Documents</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="font-medium mb-2">ID Document (Front)</h3>
+                        <a href="{{ kyc.id_document_front.url }}" target="_blank">
+                            <img src="{{ kyc.id_document_front.url }}" alt="ID Front" class="rounded-lg border shadow-sm w-full">
+                        </a>
+                    </div>
+                    {% if kyc.id_document_back %}
+                    <div>
+                        <h3 class="font-medium mb-2">ID Document (Back)</h3>
+                        <a href="{{ kyc.id_document_back.url }}" target="_blank">
+                            <img src="{{ kyc.id_document_back.url }}" alt="ID Back" class="rounded-lg border shadow-sm w-full">
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% if kyc.selfie_with_id %}
+                    <div>
+                        <h3 class="font-medium mb-2">Selfie with ID</h3>
+                        <a href="{{ kyc.selfie_with_id.url }}" target="_blank">
+                            <img src="{{ kyc.selfie_with_id.url }}" alt="Selfie" class="rounded-lg border shadow-sm w-full">
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Verification Status</h2>
+                <div class="text-center p-4 rounded-lg 
+                    {% if kyc.status == 'approved' %}bg-green-100 text-green-800
+                    {% elif kyc.status == 'rejected' %}bg-red-100 text-red-800
+                    {% elif kyc.status == 'pending' %}bg-yellow-100 text-yellow-800
+                    {% else %}bg-blue-100 text-blue-800{% endif %}">
+                    <span class="font-bold text-xl">{{ kyc.get_status_display }}</span>
+                </div>
+                {% if kyc.status == 'rejected' %}
+                <div class="mt-4">
+                    <h3 class="font-medium text-gray-800">Rejection Reason:</h3>
+                    <p class="text-sm text-gray-600 bg-gray-50 p-2 rounded-md mt-1">{{ kyc.rejection_reason }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if kyc.status == 'pending' %}
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Take Action</h2>
+                <form method="post" onsubmit="return confirm('Are you sure you want to APPROVE this KYC and create virtual accounts?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="approve">
+                    <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center justify-center space-x-2">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Approve & Create Accounts</span>
+                    </button>
+                </form>
+
+                <hr class="my-4">
+
+                <form method="post" onsubmit="return confirm('Are you sure you want to REJECT this KYC?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reject">
+                    <div class="space-y-2">
+                        <label for="rejection_reason" class="block text-sm font-medium text-gray-700">Reason for Rejection</label>
+                        <textarea name="rejection_reason" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500" placeholder="e.g., Blurry ID document, name mismatch..."></textarea>
+                    </div>
+                    <button type="submit" class="w-full mt-2 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center justify-center space-x-2">
+                        <i class="fas fa-times-circle"></i>
+                        <span>Reject Submission</span>
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

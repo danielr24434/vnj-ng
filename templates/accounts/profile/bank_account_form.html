@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Bank Account - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Add Bank Account</h1>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Bank Name -->
+            <div>
+                <label for="id_bank_name" class="block text-sm font-medium text-gray-700 mb-2">Bank Name</label>
+                <input type="text" name="bank_name" id="id_bank_name" required
+                       value="{{ form.bank_name.value|default:'' }}"
+                       placeholder="e.g., GTBank, Zenith Bank"
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                {% if form.bank_name.errors %}
+                    <p class="text-red-600 text-xs mt-1">{{ form.bank_name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Account Number -->
+            <div>
+                <label for="id_account_number" class="block text-sm font-medium text-gray-700 mb-2">Account Number</label>
+                <input type="text" name="account_number" id="id_account_number" required
+                       value="{{ form.account_number.value|default:'' }}"
+                       placeholder="10-digit account number"
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                {% if form.account_number.errors %}
+                    <p class="text-red-600 text-xs mt-1">{{ form.account_number.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Account Name -->
+            <div>
+                <label for="id_account_name" class="block text-sm font-medium text-gray-700 mb-2">Account Name</label>
+                <input type="text" name="account_name" id="id_account_name" required
+                       value="{{ form.account_name.value|default:'' }}"
+                       placeholder="Name as it appears on bank account"
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                {% if form.account_name.errors %}
+                    <p class="text-red-600 text-xs mt-1">{{ form.account_name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Account Type -->
+            <div>
+                <label for="id_account_type" class="block text-sm font-medium text-gray-700 mb-2">Account Type</label>
+                <select name="account_type" id="id_account_type" required
+                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    <option value="savings" {% if form.account_type.value == 'savings' %}selected{% endif %}>Savings</option>
+                    <option value="current" {% if form.account_type.value == 'current' %}selected{% endif %}>Current</option>
+                </select>
+                {% if form.account_type.errors %}
+                    <p class="text-red-600 text-xs mt-1">{{ form.account_type.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Primary Account -->
+            <div class="flex items-center">
+                <input type="checkbox" name="is_primary" id="id_is_primary" 
+                       {% if form.is_primary.value %}checked{% endif %}
+                       class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                <label for="id_is_primary" class="ml-2 block text-sm text-gray-700">
+                    Set as primary bank account
+                </label>
+            </div>
+            {% if form.is_primary.errors %}
+                <p class="text-red-600 text-xs mt-1">{{ form.is_primary.errors.0 }}</p>
+            {% endif %}
+
+            <!-- Form Errors -->
+            {% if form.non_field_errors %}
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <ul class="text-red-600 text-sm">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <!-- Submit Buttons -->
+            <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+                <a href="{% url 'profile_view' %}" class="text-gray-600 hover:text-gray-900 font-medium">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                    Add Bank Account
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

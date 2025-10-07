@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900">Search Results</h1>
+        <p class="text-gray-600 mt-2">
+            {% if query %}
+                Showing results for "{{ query }}"
+            {% else %}
+                Browse all content
+            {% endif %}
+        </p>
+        <p class="text-sm text-gray-500 mt-1">{{ total_results }} results found</p>
+    </div>
+
+    <!-- Search Filters -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <form method="get" class="flex flex-wrap gap-4 items-center">
+            <input type="hidden" name="q" value="{{ query }}">
+            
+            <div class="flex items-center space-x-2">
+                <span class="text-sm font-medium text-gray-700">Filter by:</span>
+                <select name="category" class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="all" {% if category == 'all' %}selected{% endif %}>All Categories</option>
+                    <option value="jobs" {% if category == 'jobs' %}selected{% endif %}>Jobs</option>
+                    <option value="courses" {% if category == 'courses' %}selected{% endif %}>Courses</option>
+                    <option value="products" {% if category == 'products' %}selected{% endif %}>Products</option>
+                    <option value="blog" {% if category == 'blog' %}selected{% endif %}>Blog</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                Apply Filters
+            </button>
+            
+            {% if query or category != 'all' %}
+            <a href="{% url 'search_results' %}" class="text-gray-600 hover:text-gray-700 text-sm">
+                Clear all filters
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Results by Category -->
+    <div class="space-y-8">
+        <!-- Jobs Results -->
+        {% if category in 'all,jobs' and results.jobs %}
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Jobs ({{ results.jobs|length }})</h2>
+                <a href="{% url 'jobs_list' %}?search={{ query }}" class="text-green-600 hover:text-green-700 text-sm">
+                    View all jobs <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+            <div class="space-y-4">
+                {% for job in results.jobs %}
+                <div class="flex items-center justify-between p-4 border rounded-lg hover:border-green-500 transition-colors">
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900">
+                            <a href="{% url 'job_detail' job.pk %}" class="hover:text-green-600">{{ job.title }}</a>
+                        </h3>
+                        <p class="text-sm text-gray-600 mt-1">{{ job.company_name }} • {{ job.location }}</p>
+                        <p class="text-green-600 font-semibold mt-1">₦{{ job.salary_min }} - ₦{{ job.salary_max }}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
+                            {{ job.get_job_type_display }}
+                        </span>
+                        <p class="text-sm text-gray-500 mt-1">{{ job.spots_left }} spots left</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Courses Results -->
+        {% if category in 'all,courses' and results.courses %}
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Courses ({{ results.courses|length }})</h2>
+                <a href="{% url 'courses_list' %}?search={{ query }}" class="text-green-600 hover:text-green-700 text-sm">
+                    View all courses <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for course in results.courses %}
+                <div class="border rounded-lg p-4 hover:border-green-500 transition-colors">
+                    <h3 class="font-semibold text-gray-900 mb-2">
+                        <a href="{% url 'course_detail' course.pk %}" class="hover:text-green-600">{{ course.title }}</a>
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-2">{{ course.instructor.get_display_name }}</p>
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                        <span>{{ course.get_level_display }}</span>
+                        <span class="text-green-600 font-semibold">₦{{ course.price }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Products Results -->
+        {% if category in 'all,products' and results.products %}
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Products ({{ results.products|length }})</h2>
+                <a href="{% url 'products_list' %}?search={{ query }}" class="text-green-600 hover:text-green-700 text-sm">
+                    View all products <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for product in results.products %}
+                <div class="border rounded-lg p-4 hover:border-green-500 transition-colors">
+                    <h3 class="font-semibold text-gray-900 mb-2">
+                        <a href="{% url 'product_detail' product.pk %}" class="hover:text-green-600">{{ product.title }}</a>
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-2">{{ product.seller.username }}</p>
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                        <span>{{ product.get_license_type_display }}</span>
+                        <span class="text-green-600 font-semibold">₦{{ product.price }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Blog Results -->
+        {% if category in 'all,blog' and results.blog_posts %}
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Blog Posts ({{ results.blog_posts|length }})</h2>
+                <a href="{% url 'blog_list' %}?search={{ query }}" class="text-green-600 hover:text-green-700 text-sm">
+                    View all posts <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+            <div class="space-y-4">
+                {% for post in results.blog_posts %}
+                <div class="border rounded-lg p-4 hover:border-green-500 transition-colors">
+                    <h3 class="font-semibold text-gray-900 mb-2">
+                        <a href="{% url 'blog_detail' post.slug %}" class="hover:text-green-600">{{ post.title }}</a>
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-2">{{ post.author.get_display_name }} • {{ post.published_at|date:"M d, Y" }}</p>
+                    <p class="text-gray-700 text-sm">{{ post.excerpt|default:post.content|truncatewords:20 }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- No Results -->
+    {% if total_results == 0 %}
+    <div class="bg-white rounded-lg shadow-lg p-12 text-center">
+        <i class="fas fa-search text-gray-300 text-6xl mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">No results found</h3>
+        <p class="text-gray-600 mb-4">
+            {% if query %}
+                We couldn't find any results for "{{ query }}". Try adjusting your search terms.
+            {% else %}
+                Try searching for jobs, courses, products, or blog posts.
+            {% endif %}
+        </p>
+        <div class="space-y-3 max-w-md mx-auto">
+            <p class="text-sm text-gray-500">Suggestions:</p>
+            <ul class="text-sm text-gray-600 space-y-1">
+                <li>• Check your spelling</li>
+                <li>• Try more general keywords</li>
+                <li>• Browse by category using the filters above</li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Apply for Mentorship - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Apply for Mentorship</h1>
+
+        <!-- Mentorship Offer Summary -->
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <div class="flex items-center space-x-3 mb-3">
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <span class="font-semibold text-green-600">{{ mentorship_offer.mentor.username|first|upper }}</span>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900">{{ mentorship_offer.mentor.get_display_name }}</p>
+                    <p class="text-sm text-gray-500">@{{ mentorship_offer.mentor.username }}</p>
+                </div>
+            </div>
+            <h3 class="font-semibold text-gray-900">{{ mentorship_offer.title }}</h3>
+            <p class="text-gray-600 text-sm mt-1">{{ mentorship_offer.expertise_area }}</p>
+            <p class="text-green-600 font-bold mt-2">₦{{ mentorship_offer.price_per_hour }}/hour</p>
+        </div>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Requested Duration -->
+            <div>
+                <label for="requested_duration" class="block text-sm font-medium text-gray-700">
+                    Requested Duration (hours) *
+                </label>
+                <input type="number" name="requested_duration" id="requested_duration" required min="1"
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                       placeholder="e.g., 5">
+                <p class="text-xs text-gray-500 mt-1">Total cost: ₦<span id="totalCost">0</span></p>
+            </div>
+
+            <!-- Application Message -->
+            <div>
+                <label for="application_message" class="block text-sm font-medium text-gray-700">
+                    Application Message *
+                </label>
+                <textarea name="application_message" id="application_message" rows="4" required
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                          placeholder="Tell the mentor about your goals and why you want their mentorship..."></textarea>
+            </div>
+
+            <!-- Payment Information -->
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h3 class="font-semibold text-green-900 mb-2">Payment Information</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-green-700">Mentorship fee:</span>
+                        <span class="font-medium" id="mentorshipFee">₦0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-green-700">Platform fee (10%):</span>
+                        <span class="font-medium" id="platformFee">₦0</span>
+                    </div>
+                    <div class="flex justify-between border-t border-green-200 pt-2">
+                        <span class="text-green-900 font-semibold">Total amount:</span>
+                        <span class="font-bold text-green-900" id="totalAmount">₦0</span>
+                    </div>
+                </div>
+                <p class="text-green-700 text-xs mt-2">
+                    The platform fee covers payment processing and platform maintenance.
+                </p>
+            </div>
+
+            <!-- Terms Agreement -->
+            <div class="flex items-start">
+                <input type="checkbox" name="terms" id="terms" required 
+                       class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1">
+                <label for="terms" class="ml-2 block text-sm text-gray-700">
+                    I understand that this amount will be held in escrow and released to the mentor 
+                    upon completion of the mentorship sessions. I agree to the 
+                    <a href="#" class="text-green-600 hover:text-green-500">Mentorship Terms</a>.
+                </label>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="flex justify-end space-x-3 pt-6">
+                <a href="{% url 'mentorship_list' %}" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                    Submit Application
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const pricePerHour = {{ mentorship_offer.price_per_hour }};
+const durationInput = document.getElementById('requested_duration');
+const totalCostSpan = document.getElementById('totalCost');
+const mentorshipFeeSpan = document.getElementById('mentorshipFee');
+const platformFeeSpan = document.getElementById('platformFee');
+const totalAmountSpan = document.getElementById('totalAmount');
+
+function calculateCosts() {
+    const duration = parseInt(durationInput.value) || 0;
+    const mentorshipFee = duration * pricePerHour;
+    const platformFee = mentorshipFee * 0.10; // 10% platform fee
+    const totalAmount = mentorshipFee + platformFee;
+
+    totalCostSpan.textContent = mentorshipFee.toFixed(2);
+    mentorshipFeeSpan.textContent = '₦' + mentorshipFee.toFixed(2);
+    platformFeeSpan.textContent = '₦' + platformFee.toFixed(2);
+    totalAmountSpan.textContent = '₦' + totalAmount.toFixed(2);
+}
+
+durationInput.addEventListener('input', calculateCosts);
+// Initial calculation
+calculateCosts();
+</script>
+{% endblock %}

@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+
+{% block title %}Site Settings - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Site Settings</h1>
+
+        <form method="post" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Currency Settings -->
+            <div class="border-b border-gray-200 pb-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Currency Settings</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="currency" class="block text-sm font-medium text-gray-700">Base Currency</label>
+                        <select name="currency" id="currency" required
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                            <option value="NGN" {% if site_settings.currency == 'NGN' %}selected{% endif %}>Nigerian Naira (NGN)</option>
+                            <option value="USD" {% if site_settings.currency == 'USD' %}selected{% endif %}>US Dollar (USD)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="currency_rate" class="block text-sm font-medium text-gray-700">Currency Rate (to USD)</label>
+                        <input type="number" name="currency_rate" id="currency_rate" required step="0.0001"
+                               value="{{ site_settings.currency_rate|default:'1.0' }}"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fee Settings -->
+            <div class="border-b border-gray-200 pb-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Fee Settings (%)</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                        <label for="add_money_fee_pct" class="block text-sm font-medium text-gray-700">Add Money Fee</label>
+                        <input type="number" name="add_money_fee_pct" id="add_money_fee_pct" required step="0.01" min="0" max="100"
+                               value="{{ site_settings.add_money_fee_pct|default:'1.5' }}"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    </div>
+                    <div>
+                        <label for="transfer_fee_pct" class="block text-sm font-medium text-gray-700">Transfer Fee</label>
+                        <input type="number" name="transfer_fee_pct" id="transfer_fee_pct" required step="0.01" min="0" max="100"
+                               value="{{ site_settings.transfer_fee_pct|default:'0.5' }}"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    </div>
+                    <div>
+                        <label for="withdraw_fee_pct" class="block text-sm font-medium text-gray-700">Withdraw Fee</label>
+                        <input type="number" name="withdraw_fee_pct" id="withdraw_fee_pct" required step="0.01" min="0" max="100"
+                               value="{{ site_settings.withdraw_fee_pct|default:'2.0' }}"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    </div>
+                    <div>
+                        <label for="mentorship_fee_pct" class="block text-sm font-medium text-gray-700">Mentorship Fee</label>
+                        <input type="number" name="mentorship_fee_pct" id="mentorship_fee_pct" required step="0.01" min="0" max="100"
+                               value="{{ site_settings.mentorship_fee_pct|default:'10.0' }}"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    </div>
+                    <div>
+                        <label for="default_commission_pct" class="block text-sm font-medium text-gray-700">Default Commission</label>
+                        <input type="number" name="default_commission_pct" id="default_commission_pct" required step="0.01" min="0" max="100"
+                               value="{{ site_settings.default_commission_pct|default:'20.0' }}"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature Toggles -->
+            <div class="border-b border-gray-200 pb-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Feature Toggles</h2>
+                <div class="space-y-4">
+                    <div class="flex items-center">
+                        <input type="checkbox" name="pause_course_uploading" id="pause_course_uploading" 
+                               {% if site_settings.pause_course_uploading %}checked{% endif %}
+                               class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                        <label for="pause_course_uploading" class="ml-2 block text-sm text-gray-700">
+                            Pause new course uploads
+                        </label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" name="pause_gigs_uploading" id="pause_gigs_uploading"
+                               {% if site_settings.pause_gigs_uploading %}checked{% endif %}
+                               class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                        <label for="pause_gigs_uploading" class="ml-2 block text-sm text-gray-700">
+                            Pause new gigs/jobs uploads
+                        </label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" name="pause_affiliates" id="pause_affiliates"
+                               {% if site_settings.pause_affiliates %}checked{% endif %}
+                               class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                        <label for="pause_affiliates" class="ml-2 block text-sm text-gray-700">
+                            Pause affiliate program
+                        </label>
+                    </div>
+                </div>
+            </div>
+<!-- Add this section after the Feature Toggles section in your existing settings.html -->
+
+<!-- Payment Settings -->
+<div class="border-b border-gray-200 pb-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Payment Settings</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Deposit Mode -->
+        <div>
+            <label for="deposit_mode" class="block text-sm font-medium text-gray-700">Deposit Mode</label>
+            <select name="deposit_mode" id="deposit_mode" required
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                <option value="manual" {% if site_settings.deposit_mode == 'manual' %}selected{% endif %}>Manual Approval</option>
+                <option value="auto" {% if site_settings.deposit_mode == 'auto' %}selected{% endif %}>Auto Process</option>
+            </select>
+        </div>
+        
+        <!-- Withdrawal Mode -->
+        <div>
+            <label for="withdrawal_mode" class="block text-sm font-medium text-gray-700">Withdrawal Mode</label>
+            <select name="withdrawal_mode" id="withdrawal_mode" required
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                <option value="manual" {% if site_settings.withdrawal_mode == 'manual' %}selected{% endif %}>Manual Approval</option>
+                <option value="auto" {% if site_settings.withdrawal_mode == 'auto' %}selected{% endif %}>Auto Process</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Manual Payment Details -->
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+            <label for="manual_bank_name" class="block text-sm font-medium text-gray-700">Bank Name</label>
+            <input type="text" name="manual_bank_name" id="manual_bank_name"
+                   value="{{ site_settings.manual_bank_name|default:'' }}"
+                   placeholder="e.g., GTBank, Zenith Bank"
+                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+        </div>
+        <div>
+            <label for="manual_account_number" class="block text-sm font-medium text-gray-700">Account Number</label>
+            <input type="text" name="manual_account_number" id="manual_account_number"
+                   value="{{ site_settings.manual_account_number|default:'' }}"
+                   placeholder="10-digit account number"
+                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+        </div>
+        <div>
+            <label for="manual_account_name" class="block text-sm font-medium text-gray-700">Account Name</label>
+            <input type="text" name="manual_account_name" id="manual_account_name"
+                   value="{{ site_settings.manual_account_name|default:'' }}"
+                   placeholder="Account holder name"
+                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+        </div>
+    </div>
+</div>
+
+<!-- API Keys Section -->
+<div class="border-b border-gray-200 pb-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Payment Gateway API Keys</h2>
+    <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="monnify_api_key" class="block text-sm font-medium text-gray-700">Monnify API Key</label>
+                <input type="password" name="monnify_api_key" id="monnify_api_key"
+                       value="{{ site_settings.monnify_api_key|default:'' }}"
+                       placeholder="Monnify API Key"
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            </div>
+            <div>
+                <label for="monnify_secret_key" class="block text-sm font-medium text-gray-700">Monnify Secret Key</label>
+                <input type="password" name="monnify_secret_key" id="monnify_secret_key"
+                       value="{{ site_settings.monnify_secret_key|default:'' }}"
+                       placeholder="Monnify Secret Key"
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="paystack_public_key" class="block text-sm font-medium text-gray-700">Paystack Public Key</label>
+                <input type="password" name="paystack_public_key" id="paystack_public_key"
+                       value="{{ site_settings.paystack_public_key|default:'' }}"
+                       placeholder="Paystack Public Key"
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            </div>
+            <div>
+                <label for="paystack_secret_key" class="block text-sm font-medium text-gray-700">Paystack Secret Key</label>
+                <input type="password" name="paystack_secret_key" id="paystack_secret_key"
+                       value="{{ site_settings.paystack_secret_key|default:'' }}"
+                       placeholder="Paystack Secret Key"
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            </div>
+        </div>
+    </div>
+</div>
+
+            <!-- Site Information -->
+            <div class="border-b border-gray-200 pb-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Site Information</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label for="site_title" class="block text-sm font-medium text-gray-700">Site Title</label>
+                        <input type="text" name="site_title" id="site_title" required
+                               value="{{ site_settings.site_title|default:'Vinaji NG' }}"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    </div>
+                    <div>
+                        <label for="site_description" class="block text-sm font-medium text-gray-700">Site Description</label>
+                        <textarea name="site_description" id="site_description" rows="3"
+                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">{{ site_settings.site_description|default:'' }}</textarea>
+                    </div>
+                    <div>
+                        <label for="contact_email" class="block text-sm font-medium text-gray-700">Contact Email</label>
+                        <input type="email" name="contact_email" id="contact_email" required
+                               value="{{ site_settings.contact_email|default:'support@vinaji.com' }}"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    </div>
+                    <div>
+                        <label for="legal_text" class="block text-sm font-medium text-gray-700">Legal Text</label>
+                        <textarea name="legal_text" id="legal_text" rows="4"
+                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">{{ site_settings.legal_text|default:'' }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex justify-end">
+                <button type="submit" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                    Save Settings
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mt-6 border border-red-200">
+        <h2 class="text-lg font-semibold text-red-900 mb-4">Danger Zone</h2>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-medium text-red-800">Clear All Cache</h3>
+                    <p class="text-red-700 text-sm">Clear all cached data and settings</p>
+                </div>
+                <button type="button" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                    Clear Cache
+                </button>
+            </div>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-medium text-red-800">Reset to Defaults</h3>
+                    <p class="text-red-700 text-sm">Reset all settings to default values</p>
+                </div>
+                <button type="button" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                    Reset Settings
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}My Referrals - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900">My Referrals</h1>
+        <p class="text-gray-600 mt-2">Track your referrals and earned commissions</p>
+    </div>
+
+    <!-- Referrals List -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200">
+                        <th class="text-left py-3 px-4 text-sm font-medium text-gray-700">User</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-gray-700">Joined Date</th>
+                        <th class="text-left py-3 px-4 text-sm font-medium text-gray-700">Status</th>
+                        <th class="text-right py-3 px-4 text-sm font-medium text-gray-700">Total Earned</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for referral in referrals %}
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-3 px-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                    <span class="text-green-600 text-sm font-semibold">{{ referral.referred_user.username|first|upper }}</span>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">{{ referral.referred_user.get_display_name }}</p>
+                                    <p class="text-sm text-gray-500">@{{ referral.referred_user.username }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4 text-sm text-gray-600">
+                            {{ referral.joined_at|date:"M d, Y" }}
+                        </td>
+                        <td class="py-3 px-4">
+                            {% if referral.is_active %}
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">Active</span>
+                            {% else %}
+                            <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-medium">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="text-green-600 font-semibold">₦{{ referral.total_earned|default:"0.00" }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="py-8 px-4 text-center">
+                            <i class="fas fa-users text-gray-300 text-4xl mb-3"></i>
+                            <p class="text-gray-500">No referrals yet. Share your link to start earning!</p>
+                            <a href="{% url 'affiliate_dashboard' %}" class="text-green-600 hover:text-green-700 text-sm mt-2 inline-block">
+                                Get your referral link
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="flex justify-center items-center space-x-2 mt-6">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" 
+               class="bg-white border border-gray-300 px-3 py-2 rounded-md hover:bg-gray-50">
+                Previous
+            </a>
+            {% endif %}
+
+            <span class="text-gray-700">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" 
+               class="bg-white border border-gray-300 px-3 py-2 rounded-md hover:bg-gray-50">
+                Next
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

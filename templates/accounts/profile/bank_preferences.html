@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Bank Preferences - Vinaji NG{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Bank Account Preferences</h1>
+
+        <!-- Virtual Accounts -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Your Virtual Accounts</h2>
+            
+            {% if virtual_accounts %}
+            <div class="space-y-4">
+                {% for account in virtual_accounts %}
+                <div class="border rounded-lg p-4 {% if account.is_primary %}border-green-500 bg-green-50{% endif %}">
+                    <div class="flex justify-between items-center">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <h3 class="font-semibold text-gray-900">{{ account.bank_name }}</h3>
+                                {% if account.is_primary %}
+                                <span class="bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold">Primary</span>
+                                {% endif %}
+                                <span class="{% if account.is_active %}text-green-600{% else %}text-red-600{% endif %} text-sm">
+                                    {% if account.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </div>
+                            <p class="text-gray-600 font-mono text-lg">{{ account.account_number }}</p>
+                            <p class="text-gray-500 text-sm">{{ account.account_name }}</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            {% if not account.is_primary %}
+                            <a href="{% url 'set_primary_account' account.id %}" 
+                               class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                                Set Primary
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'toggle_account_active' account.id %}" 
+                               class="{% if account.is_active %}bg-red-600 hover:bg-red-700{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white px-3 py-1 rounded text-sm">
+                                {% if account.is_active %}Deactivate{% else %}Activate{% endif %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                <i class="fas fa-university text-gray-300 text-4xl mb-3"></i>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">No Virtual Accounts</h3>
+                <p class="text-gray-600 mb-4">Complete KYC verification to get your virtual accounts</p>
+                <a href="{% url 'kyc_verification' %}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                    Complete KYC Verification
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Bank Preferences Form -->
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Select Preferred Banks</h2>
+            <p class="text-gray-600 mb-4">Choose which banks you want to appear in your virtual accounts</p>
+
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for bank in available_banks %}
+                    <div class="flex items-center p-3 border rounded-lg hover:border-green-500 transition-colors">
+                        <input type="checkbox" name="banks" value="{{ bank.bank_code }}" 
+                               id="bank_{{ bank.bank_code }}"
+                               {% if bank in user_preferences %}checked{% endif %}
+                               class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                        <label for="bank_{{ bank.bank_code }}" class="ml-3 block text-sm font-medium text-gray-700">
+                            {{ bank.bank_name }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                    <p class="text-blue-800 text-sm">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Selected banks will be available for your virtual accounts. 
+                        You can activate/deactivate individual accounts above.
+                    </p>
+                </div>
+
+                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                    Save Preferences
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}KYC Management - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900">KYC Management</h1>
+        <p class="text-gray-600 mt-2">Review, approve, or reject user identity verifications.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <p class="text-sm font-medium text-gray-600">Total Submissions</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats.total }}</p>
+        </div>
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg shadow-lg p-6">
+            <p class="text-sm font-medium text-yellow-800">Pending Review</p>
+            <p class="text-3xl font-bold text-yellow-900 mt-1">{{ stats.pending }}</p>
+        </div>
+        <div class="bg-green-50 border border-green-200 rounded-lg shadow-lg p-6">
+            <p class="text-sm font-medium text-green-800">Approved</p>
+            <p class="text-3xl font-bold text-green-900 mt-1">{{ stats.approved }}</p>
+        </div>
+        <div class="bg-red-50 border border-red-200 rounded-lg shadow-lg p-6">
+            <p class="text-sm font-medium text-red-800">Rejected</p>
+            <p class="text-3xl font-bold text-red-900 mt-1">{{ stats.rejected }}</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-4">
+        <form method="get" class="flex flex-col md:flex-row gap-4 items-center">
+            <div class="flex-grow w-full">
+                <input type="text" name="search" value="{{ search_query }}" placeholder="Search by username, email, name, or ID number..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+            </div>
+            <div class="flex-shrink-0 w-full md:w-auto">
+                <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    <option value="">All Statuses</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+            </div>
+            <div class="flex-shrink-0 w-full md:w-auto">
+                <button type="submit" class="w-full bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors font-semibold">Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg overflow-x-auto">
+        <table class="w-full text-sm text-left text-gray-500">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3">User</th>
+                    <th scope="col" class="px-6 py-3">ID Type</th>
+                    <th scope="col" class="px-6 py-3">Status</th>
+                    <th scope="col" class="px-6 py-3">Submitted</th>
+                    <th scope="col" class="px-6 py-3">Reviewed</th>
+                    <th scope="col" class="px-6 py-3">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for kyc in page_obj %}
+                <tr class="bg-white border-b hover:bg-gray-50">
+                    <td class="px-6 py-4 font-medium text-gray-900">{{ kyc.user.username }}</td>
+                    <td class="px-6 py-4">{{ kyc.get_id_type_display }}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full
+                            {% if kyc.status == 'approved' %} bg-green-100 text-green-800
+                            {% elif kyc.status == 'rejected' %} bg-red-100 text-red-800
+                            {% elif kyc.status == 'pending' %} bg-yellow-100 text-yellow-800
+                            {% else %} bg-blue-100 text-blue-800 {% endif %}">
+                            {{ kyc.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">{{ kyc.submitted_at|date:"M d, Y, P" }}</td>
+                    <td class="px-6 py-4">{{ kyc.reviewed_at|date:"M d, Y, P"|default:"N/A" }}</td>
+                    <td class="px-6 py-4">
+                        <a href="{% url 'kyc_detail' kyc.id %}" class="font-medium text-green-600 hover:underline">View / Review</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-12 text-gray-500">No KYC submissions found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="bg-white rounded-lg shadow-lg p-4 flex justify-center items-center space-x-2">
+        {% if page_obj.has_previous %}
+            <a href="?page=1&search={{ search_query }}&status={{ status_filter }}" class="px-3 py-1 border rounded-lg hover:bg-gray-100">« First</a>
+            <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&status={{ status_filter }}" class="px-3 py-1 border rounded-lg hover:bg-gray-100">‹ Previous</a>
+        {% endif %}
+
+        <span class="px-3 py-1">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&status={{ status_filter }}" class="px-3 py-1 border rounded-lg hover:bg-gray-100">Next ›</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}&search={{ search_query }}&status={{ status_filter }}" class="px-3 py-1 border rounded-lg hover:bg-gray-100">Last »</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

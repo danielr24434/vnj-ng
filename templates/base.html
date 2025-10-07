@@ -1,0 +1,988 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Vinaji NG - Work & Earn Platform{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #34d399;
+            --secondary-color: #1f2937;
+            --accent-color: #f59e0b;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --bg-light: #f9fafb;
+            --bg-white: #ffffff;
+            --border-color: #e5e7eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --sidebar-width: 280px;
+            --header-height: 70px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background-color: var(--bg-light);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Preloader Styles */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-white);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+        }
+
+        .preloader-content {
+            text-align: center;
+        }
+
+        .vinaji-logo {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.2em;
+            position: relative;
+        }
+
+        .vinaji-logo::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .loading-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        .dot:nth-child(3) { animation-delay: 0s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .preloader-text {
+            margin-top: 1.5rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-white);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-left: 0.5rem;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-title {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-light);
+            letter-spacing: 0.05em;
+        }
+
+        .nav-links {
+            list-style: none;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: rgba(16, 185, 129, 0.05);
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+        }
+
+        .nav-link.active {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .nav-link i {
+            width: 20px;
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .nav-link .badge {
+            margin-left: auto;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Header Styles */
+        .header {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            height: var(--header-height);
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 99;
+            transition: left 0.3s ease;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: var(--text-dark);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            transition: background 0.3s ease;
+        }
+
+        .mobile-menu-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .search-container {
+            position: relative;
+            width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* User Dropdown */
+        .user-dropdown {
+            position: relative;
+        }
+
+        .user-menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: background 0.3s ease;
+        }
+
+        .user-menu-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .user-info {
+            text-align: left;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-lg);
+            padding: 0.5rem 0;
+            min-width: 220px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 101;
+        }
+
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: background 0.3s ease;
+            gap: 0.75rem;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--primary-color);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 0.5rem 0;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 2rem;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+        }
+
+        /* Alert Messages */
+        .alert-container {
+            margin-bottom: 2rem;
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error-color);
+            color: var(--error-color);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning-color);
+            color: var(--warning-color);
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3b82f6;
+            color: #3b82f6;
+        }
+
+        /* Mobile Overlay */
+        .mobile-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 98;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .header {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .search-container {
+                width: 300px;
+            }
+
+            .user-info {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 1rem;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .search-container {
+                width: 200px;
+            }
+
+            .vinaji-logo {
+                font-size: 2.5rem;
+                letter-spacing: 0.15em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .search-container {
+                display: none;
+            }
+
+            .header {
+                padding: 0 0.5rem;
+            }
+        }
+        .dropdown-menu-inner {
+        display: none;
+        flex-direction: column;
+        margin-left: 1.5rem;
+        border-left: 2px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+
+    .dropdown.open > .dropdown-menu-inner {
+        display: flex;
+    }
+
+    .dropdown-toggle {
+        width: 100%;
+        text-align: left;
+        background: none;
+        border: none;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+    }
+
+    .dropdown-toggle:hover {
+        background: rgba(16, 185, 129, 0.05);
+        color: var(--primary-color);
+    }
+
+
+        /* Utility Classes */
+        .text-primary { color: var(--primary-color); }
+        .text-center { text-align: center; }
+        .hidden { display: none; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .w-full { width: 100%; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .p-4 { padding: 1rem; }
+        /* Sidebar dropdown */
+
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="preloader-content">
+            <div class="vinaji-logo">V I N A J I</div>
+            <div class="loading-dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <div class="preloader-text">Loading your work & earn experience...</div>
+        </div>
+    </div>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="{% url 'dashboard' %}" class="logo">
+                <i class="fas fa-rocket text-primary"></i>
+                <span class="logo-text">Vinaji NG</span>
+            </a>
+        </div>
+
+        <nav class="sidebar-nav">
+            <!-- Main Navigation -->
+            <div class="nav-section">
+                <div class="nav-title">Main</div>
+                <ul class="nav-links">
+                    <li>
+                        <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                            <i class="fas fa-home"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'search_results' %}" class="nav-link">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Work & Earn -->
+            <div class="nav-section">
+                <div class="nav-title">Work & Earn</div>
+                <ul class="nav-links">
+                    <li class="dropdown">
+                        <button class="nav-link dropdown-toggle" onclick="toggleDropdown(this)">
+                            <i class="fas fa-briefcase"></i>
+                            Jobs & Gigs
+                            <i class="fas fa-chevron-down ml-auto text-sm"></i>
+                        </button>
+                        <ul class="dropdown-menu-inner">
+                            <li><a href="{% url 'job_manage' %}" class="nav-link pl-10"><i class="fas fa-briefcase mr-2"></i>My Jobs</a></li>
+                            <li><a href="{% url 'jobs_list' %}" class="nav-link pl-10"><i class="fas fa-list mr-2"></i>All Jobs</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <button class="nav-link dropdown-toggle" onclick="toggleDropdown(this)">
+                            <i class="fas fa-graduation-cap"></i>
+                            Courses
+                            <i class="fas fa-chevron-down ml-auto text-sm"></i>
+                        </button>
+                        <ul class="dropdown-menu-inner">
+                            <li><a href="{% url 'course_manage' %}" class="nav-link pl-10"><i class="fas fa-graduation-cap mr-2"></i>My Courses</a></li>
+                            <li><a href="{% url 'courses_list' %}" class="nav-link pl-10"><i class="fas fa-list mr-2"></i>All Courses</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <button class="nav-link dropdown-toggle" onclick="toggleDropdown(this)">
+                            <i class="fas fa-shopping-bag"></i>
+                            Products
+                            <i class="fas fa-chevron-down ml-auto text-sm"></i>
+                        </button>
+                        <ul class="dropdown-menu-inner">
+                            <li><a href="{% url 'product_manage' %}" class="nav-link pl-10"><i class="fas fa-box mr-2"></i>My Products</a></li>
+                            <li><a href="{% url 'products_list' %}" class="nav-link pl-10"><i class="fas fa-list mr-2"></i>All Products</a></li>
+                        </ul>
+                    </li>
+                        <a href="{% url 'mentorship_list' %}" class="nav-link {% if 'mentorship' in request.resolver_match.url_name %}active{% endif %}">
+                            <i class="fas fa-users"></i>
+                            Mentorship
+                            <span class="badge">Pro</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Affiliates & Referrals -->
+            <div class="nav-section">
+                <div class="nav-title">Earn More</div>
+                <ul class="nav-links">
+                    <li>
+                        <a href="{% url 'affiliate_dashboard' %}" class="nav-link {% if 'affiliate' in request.resolver_match.url_name %}active{% endif %}">
+                            <i class="fas fa-handshake"></i>
+                            Affiliate Program
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'referral_list' %}" class="nav-link {% if 'referral' in request.resolver_match.url_name %}active{% endif %}">
+                            <i class="fas fa-user-plus"></i>
+                            My Referrals
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Content & Blog -->
+            <div class="nav-section">
+                <div class="nav-title">Content</div>
+                <ul class="nav-links">
+                    <li>
+                        <a href="{% url 'blog_list' %}" class="nav-link {% if 'blog' in request.resolver_match.url_name %}active{% endif %}">
+                            <i class="fas fa-blog"></i>
+                            Blog (Vlogt)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'blog_manage' %}" class="nav-link {% if request.resolver_match.url_name == 'blog_manage' %}active{% endif %}">
+                            <i class="fas fa-edit"></i>
+                            My Posts
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Financial -->
+            <div class="nav-section">
+                <div class="nav-title">Financial</div>
+                <ul class="nav-links">
+                    <li>
+                        <a href="{% url 'transactions_list' %}" class="nav-link {% if 'transactions' in request.resolver_match.url_name %}active{% endif %}">
+                            <i class="fas fa-history"></i>
+                            Transactions
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'add_money' %}" class="nav-link {% if 'add_money' in request.resolver_match.url_name %}active{% endif %}">
+                            <i class="fas fa-wallet"></i>
+                            Add Money
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'withdraw_money' %}" class="nav-link {% if 'withdraw' in request.resolver_match.url_name %}active{% endif %}">
+                            <i class="fas fa-money-bill-wave"></i>
+                            Withdraw
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'transfer_money' %}" class="nav-link {% if 'transfer' in request.resolver_match.url_name %}active{% endif %}">
+                            <i class="fas fa-exchange-alt"></i>
+                            Transfer
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Account & Settings -->
+            <div class="nav-section">
+                <div class="nav-title">Account</div>
+                <ul class="nav-links">
+                    <li>
+                        <a href="{% url 'profile_view' %}" class="nav-link {% if 'profile' in request.resolver_match.url_name %}active{% endif %}">
+                            <i class="fas fa-user"></i>
+                            My Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'pricing_list' %}" class="nav-link {% if 'pricing' in request.resolver_match.url_name %}active{% endif %}">
+                            <i class="fas fa-crown"></i>
+                            Subscription Plans
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'notifications_list' %}" class="nav-link {% if 'notifications' in request.resolver_match.url_name %}active{% endif %}">
+                            <i class="fas fa-bell"></i>
+                            Notifications
+                            <span class="badge" id="notificationCount">{{ unread_notifications_count }}</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Admin Section (Visible only to staff) -->
+            {% if user.is_staff %}
+            <div class="nav-section">
+                <div class="nav-title">Admin</div>
+                <ul class="nav-links">
+                    <li>
+                        <a href="{% url 'admin:index' %}" class="nav-link">
+                            <i class="fas fa-cog"></i>
+                            Django Admin
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'moderation_panel' %}" class="nav-link {% if 'moderation' in request.resolver_match.url_name %}active{% endif %}">
+                            <i class="fas fa-shield-alt"></i>
+                            Moderation
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'admin_dashboard' %}" class="nav-link {% if 'admin_dashboard' in request.resolver_match.url_name %}active{% endif %}">
+                            <i class="fas fa-chart-bar"></i>
+                            Analytics
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            {% endif %}
+        </nav>
+    </aside>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <form action="{% url 'search_results' %}" method="get">
+                    <input type="text" 
+                           name="q" 
+                           class="search-input" 
+                           placeholder="Search jobs, courses, products..."
+                           value="{{ request.GET.q }}">
+                </form>
+            </div>
+        </div>
+
+        <div class="header-right">
+            {% if user.is_authenticated %}
+                <div class="user-dropdown">
+                    <button class="user-menu-btn" id="userMenuBtn">
+                        <div class="user-avatar">
+                            {{ user.username|first|upper }}
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">{{ user.username }}</div>
+                            <div class="user-role">{{ user.get_subscription_level_display }}</div>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown-menu" id="userDropdown">
+                        <a href="{% url 'profile_view' %}" class="dropdown-item">
+                            <i class="fas fa-user"></i> My Profile
+                        </a>
+                        <a href="{% url 'affiliate_dashboard' %}" class="dropdown-item">
+                            <i class="fas fa-handshake"></i> Affiliate Dashboard
+                        </a>
+                        <a href="{% url 'transactions_list' %}" class="dropdown-item">
+                            <i class="fas fa-history"></i> Transaction History
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{% url 'logout' %}" class="dropdown-item">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="auth-buttons">
+                    <a href="{% url 'login' %}" class="btn btn-ghost">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    <a href="{% url 'register' %}" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Sign Up
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </header>
+    
+    {% if user.is_authenticated %}
+    {% for notification in admin_notifications %}
+    {% if notification.is_current and notification.show_popup %}
+    <div class="fixed bottom-0 left-0 right-0 z-[9999] w-full">
+        <div class="w-full text-center py-4 shadow-2xl border-t 
+            {% if notification.notification_type == 'success' %}bg-green-700 text-white border-green-800
+            {% elif notification.notification_type == 'warning' %}bg-yellow-600 text-black border-yellow-700
+            {% elif notification.notification_type == 'error' %}bg-red-700 text-white border-red-800
+            {% else %}bg-blue-700 text-white border-blue-800{% endif %}">
+            <div class="flex justify-between items-center max-w-5xl mx-auto px-4">
+                <div class="text-left">
+                    <h4 class="font-semibold">{{ notification.title }}</h4>
+                    <p class="text-sm opacity-90">{{ notification.message }}</p>
+                    {% if notification.action_url %}
+                    <a href="{{ notification.action_url }}" class="text-sm underline hover:opacity-80">
+                        {{ notification.action_text|default:"Learn more" }}
+                    </a>
+                    {% endif %}
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const popups = document.querySelectorAll('.fixed.bottom-0.left-0.right-0 > div');
+        setTimeout(function() {
+            popups.forEach(function(popup) {
+                popup.style.transition = 'opacity 0.5s ease';
+                popup.style.opacity = '0';
+                setTimeout(() => popup.remove(), 500);
+            });
+        }, 10000);
+    });
+    </script>
+    {% endif %}
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Alert Messages -->
+        <div class="alert-container">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <i class="fas 
+                            {% if message.tags == 'success' %}fa-check-circle
+                            {% elif message.tags == 'error' %}fa-exclamation-circle
+                            {% elif message.tags == 'warning' %}fa-exclamation-triangle
+                            {% else %}fa-info-circle{% endif %}">
+                        </i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        {% block content %}
+        <!-- Page content will be injected here -->
+        {% endblock %}
+    </main>
+
+    <!-- JavaScript -->
+    <script>
+        // Preloader
+        window.addEventListener('load', function() {
+            const preloader = document.getElementById('preloader');
+            setTimeout(() => {
+                preloader.style.opacity = '0';
+                preloader.style.visibility = 'hidden';
+            }, 1000);
+        });
+
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('mobile-open');
+            mobileOverlay.classList.toggle('show');
+            document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+        }
+
+        mobileMenuBtn.addEventListener('click', toggleSidebar);
+        mobileOverlay.addEventListener('click', toggleSidebar);
+
+        // User Dropdown Toggle
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userDropdown = document.getElementById('userDropdown');
+
+        userMenuBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            userDropdown.classList.toggle('show');
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            // Close user dropdown
+            if (!userMenuBtn.contains(event.target) && !userDropdown.contains(event.target)) {
+                userDropdown.classList.remove('show');
+            }
+        });
+
+        // Auto-hide alerts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.opacity = '0';
+                    alert.style.transform = 'translateY(-10px)';
+                    setTimeout(() => alert.remove(), 300);
+                }, 5000);
+            });
+
+            // Notification count is now handled by context processor
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 1024) {
+                sidebar.classList.remove('mobile-open');
+                mobileOverlay.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        });
+    </script>
+    <script>
+        function toggleDropdown(button) {
+            const parent = button.closest('.dropdown');
+            const isOpen = parent.classList.contains('open');
+            document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('open'));
+            if (!isOpen) parent.classList.add('open');
+        }
+        </script>
+        
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

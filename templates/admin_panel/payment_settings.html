@@ -1,0 +1,403 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment Settings - Admin Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Main Styles */
+.payment-settings {
+    font-family: 'Inter', sans-serif;
+}
+
+.settings-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    transition: box-shadow 0.2s ease;
+}
+
+.settings-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.settings-header {
+    color: #111827;
+    font-weight: 600;
+    font-size: 1.125rem;
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Input Field Styles */
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    background-color: white;
+    font-family: inherit;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Style all input types */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="tel"],
+textarea,
+select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    background-color: white;
+    font-family: inherit;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Specific styling for Django form inputs */
+input.form-control,
+textarea.form-control,
+select.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    background-color: white;
+    font-family: inherit;
+}
+
+input.form-control:focus,
+textarea.form-control:focus,
+select.form-control:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Style Django form fields directly by their HTML attributes */
+input[name*="monnify"],
+input[name*="manual"],
+input[name*="name"],
+textarea,
+select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    background-color: white;
+    font-family: inherit;
+}
+
+input[name*="monnify"]:focus,
+input[name*="manual"]:focus,
+input[name*="name"]:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Checkbox Styles */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+input[type="checkbox"] {
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 4px;
+    border: 1px solid #d1d5db;
+    accent-color: #10b981;
+    cursor: pointer;
+}
+
+input[type="checkbox"]:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Button Styles */
+.btn-primary {
+    background-color: #10b981;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.btn-primary:hover {
+    background-color: #059669;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: #3b82f6;
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.btn-secondary:hover {
+    background-color: #2563eb;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-active {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.status-inactive {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.toggle-btn {
+    color: #3b82f6;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.toggle-btn:hover {
+    color: #2563eb;
+    background-color: #f8fafc;
+}
+
+.method-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.2s ease;
+}
+
+.method-card:hover {
+    border-color: #d1d5db;
+    background-color: #fafafa;
+}
+
+.help-text {
+    color: #6b7280;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.section-description {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+}
+
+.grid-form {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.grid-2-col {
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+    .grid-2-col {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Empty State Styling */
+.empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #6b7280;
+}
+
+.empty-state-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="payment-settings space-y-8">
+    <!-- Header Section -->
+    <div class="settings-card p-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Payment Settings</h1>
+        <p class="section-description">Configure payment gateways, manual deposit methods, and available options for users.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="update_settings">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Settings Column -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Monnify Gateway Settings -->
+                <div class="settings-card p-8">
+                    <h2 class="settings-header">Monnify Gateway Settings</h2>
+                    <div class="grid-form">
+                        <div class="grid-2-col gap-6">
+                            <div>
+                                <label class="form-label">API Key</label>
+                                {{ settings_form.monnify_api_key }}
+                            </div>
+                            <div>
+                                <label class="form-label">Secret Key</label>
+                                {{ settings_form.monnify_secret_key }}
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label">Contract Code</label>
+                            {{ settings_form.monnify_contract_code }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manual Deposit Account -->
+                <div class="settings-card p-8">
+                    <h2 class="settings-header">Manual Deposit Account</h2>
+                    <p class="section-description">Enter the bank details users should pay into for manual deposits.</p>
+                    <div class="grid-form">
+                        <div>
+                            <label class="form-label">Bank Name</label>
+                            {{ settings_form.manual_bank_name }}
+                        </div>
+                        <div class="grid-2-col gap-6">
+                            <div>
+                                <label class="form-label">Account Number</label>
+                                {{ settings_form.manual_account_number }}
+                            </div>
+                            <div>
+                                <label class="form-label">Account Name</label>
+                                {{ settings_form.manual_account_name }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Save Button -->
+                <div class="flex justify-end">
+                    <button type="submit" class="btn-primary">
+                        Save All Settings
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sidebar Column -->
+            <div class="space-y-8">
+                <!-- Available Payment Methods -->
+                <div class="settings-card p-6">
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h2 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-3">Available Payment Methods</h2>
+                            <div class="space-y-3">
+                                {% for method in payment_methods %}
+                                <div class="flex justify-between items-center p-3 border rounded-lg">
+                                    <div>
+                                        <p class="font-medium">{{ method.name }}</p>
+                                        <p class="text-xs text-gray-500">{{ method.get_method_type_display }}</p>
+                                    </div>
+                                    </div>
+                                {% empty %}
+                                <p class="text-center text-gray-500 py-4">No payment methods created yet.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h2 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-3">Add New Method</h2>
+                            <form method="post" class="space-y-4">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="add_method">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Method Name</label>
+                                    {{ add_method_form.name }}
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Method Type</label>
+                                    {{ add_method_form.method_type }}
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Instructions for User (Optional)</label>
+                                    {{ add_method_form.instructions }}
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    {{ add_method_form.is_active }}
+                                    <label class="text-sm font-medium text-gray-700">Activate this method</label>
+                                </div>
+                                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-semibold">
+                                    Add Method
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                <!-- Add New Method -->
+              
+            
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
